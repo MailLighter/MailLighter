@@ -8,9 +8,9 @@
   <Description DefaultValue="The best way to clean your emails."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
-  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
+  <SupportUrl DefaultValue="https://www.maillighter.com/help"/>
   <AppDomains>
-    <AppDomain>https://www.contoso.com</AppDomain>
+    <AppDomain>https://www.maillighter.com</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Mailbox"/>
