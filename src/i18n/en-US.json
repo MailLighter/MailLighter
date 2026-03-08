@@ -1,0 +1,73 @@
+{
+  "commands": {
+    "errors": {
+      "bodyReadUnavailable": "Body read is not available.",
+      "bodyReadFailed": "Unable to read the email body.",
+      "bodyWriteUnavailable": "Body update is not available.",
+      "bodyWriteFailed": "Unable to update the email body.",
+      "attachmentsUnavailableContext": "Attachment removal is not available in this context.",
+      "attachmentsUnavailable": "Attachment removal is not available.",
+      "attachmentsReadFailed": "Unable to read attachments.",
+      "attachmentRemoveFailed": "Unable to remove attachment."
+    },
+    "notifications": {
+      "genericError": "❌ An unexpected error occurred",
+      "imagesNone": "ℹ️ No images to remove",
+      "imagesRemoved": "✅ {count} image(s) removed.",
+      "imagesRemovedWithSize": "✅ {count} image(s) removed — {size} saved",
+      "attachmentsNone": "ℹ️ No attachments to remove",
+      "attachmentsRemoved": "✅ {count} attachment(s) removed.",
+      "attachmentsRemovedWithSize": "✅ {count} attachment(s) removed — {size} saved",
+      "repliesNone": "ℹ️ No replies to clean",
+      "repliesNoChange": "ℹ️ {count} reply(ies) detected, no cleanup needed",
+      "repliesCleaned": "✅ {count} reply(ies) detected — kept latest 2",
+      "cleanAllDone": "✅ Full cleanup completed — {details}",
+      "cleanAllImagesPrefix": "Images",
+      "cleanAllAttachmentsPrefix": "Attachments",
+      "cleanAllRepliesPrefix": "Replies",
+      "cannotRemoveImages": "❌ Unable to remove images",
+      "cannotRemoveAttachments": "❌ Unable to remove attachments",
+      "cannotKeepReplies": "❌ Unable to keep 2 replies",
+      "cannotCleanAll": "❌ Unable to run full cleanup",
+      "actionPerformed": "Action completed."
+    }
+  },
+  "taskpane": {
+    "title": "MailLighter Add-in",
+    "welcome": "Welcome",
+    "cleanupTitle": "Email cleanup",
+    "removeImagesButton": "🖼️ Remove images",
+    "keepRepliesButton": "💬 Keep latest 2 replies",
+    "removeAttachmentsButton": "📎 Remove attachments",
+    "cleanAllButton": "🧹 Remove everything",
+    "confirmCleanAll": "Are you sure you want to remove everything?",
+    "yes": "Yes",
+    "no": "No",
+    "cleaningInProgress": "Cleaning in progress...",
+    "actionCancelled": "Action canceled.",
+    "bodyEditUnavailable": "❌ Body update is not available in read mode",
+    "bodyReadError": "❌ Unable to read email body",
+    "imagesRemoved": "✅ {count} image(s) removed!",
+    "imagesRemovedWithSize": "✅ {count} image(s) removed! ({size} saved)",
+    "imagesRemoveError": "❌ Unable to remove images: {details}",
+    "attachmentsNone": "ℹ️ No attachments to remove",
+    "attachmentsRemoved": "✅ {count} attachment(s) removed!",
+    "attachmentsRemovedWithSize": "✅ {count} attachment(s) removed! ({size} saved)",
+    "attachmentRemoveError": "❌ Unable to remove attachment: {details}",
+    "attachmentsReadError": "❌ Unable to read attachments: {details}",
+    "bodyReadErrorReplies": "❌ Unable to read email body",
+    "repliesNone": "ℹ️ No reply detected in this email",
+    "repliesNoChange": "ℹ️ {count} reply(ies) detected, no cleanup needed",
+    "repliesCleaned": "✅ Replies cleaned ({count} detected, latest 2 kept)!",
+    "repliesCleanError": "❌ Unable to clean replies: {details}",
+    "cleanAllDone": "✅ Email fully cleaned!",
+    "unknown": "unknown",
+    "genericError": "❌ Error: {details}"
+  },
+  "units": {
+    "kilobytes": "KB",
+    "megabytes": "MB",
+    "gigabytes": "GB",
+    "lessThanOne": "< 1 KB"
+  }
+}

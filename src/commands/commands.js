@@ -5,9 +5,304 @@
 
 /* global Office */
 
+import { t } from "../shared/i18n";
+
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
 });
+
+function notify(message, icon = "Icon.80x80") {
+  const item = Office.context.mailbox.item;
+
+  if (!item || !item.notificationMessages) {
+    return;
+  }
+
+  item.notificationMessages.replaceAsync("MailLighterNotification", {
+    type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+    message,
+    icon,
+    persistent: false,
+  });
+}
+
+function getBodyAsync(coercionType) {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item || !item.body || typeof item.body.getAsync !== "function") {
+      reject(new Error(t("commands.errors.bodyReadUnavailable")));
+      return;
+    }
+
+    item.body.getAsync(coercionType, (result) => {
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        resolve(result.value || "");
+        return;
+      }
+
+      reject(
+        new Error(
+          result.error && result.error.message ? result.error.message : t("commands.errors.bodyReadFailed")
+        )
+      );
+    });
+  });
+}
+
+function setBodyAsync(content, coercionType) {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item || !item.body || typeof item.body.setAsync !== "function") {
+      reject(new Error(t("commands.errors.bodyWriteUnavailable")));
+      return;
+    }
+
+    item.body.setAsync(content, { coercionType }, (result) => {
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        resolve();
+        return;
+      }
+
+      reject(
+        new Error(
+          result.error && result.error.message ? result.error.message : t("commands.errors.bodyWriteFailed")
+        )
+      );
+    });
+  });
+}
+
+function getAttachmentsAsync() {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item || typeof item.getAttachmentsAsync !== "function") {
+      reject(new Error(t("commands.errors.attachmentsUnavailableContext")));
+      return;
+    }
+
+    item.getAttachmentsAsync((result) => {
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        resolve(result.value || []);
+        return;
+      }
+
+      reject(
+        new Error(
+          result.error && result.error.message
+            ? result.error.message
+            : t("commands.errors.attachmentsReadFailed")
+        )
+      );
+    });
+  });
+}
+
+function removeAttachmentAsync(attachmentId) {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item || typeof item.removeAttachmentAsync !== "function") {
+      reject(new Error(t("commands.errors.attachmentsUnavailable")));
+      return;
+    }
+
+    item.removeAttachmentAsync(attachmentId, (result) => {
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        resolve();
+        return;
+      }
+
+      reject(
+        new Error(
+          result.error && result.error.message
+            ? result.error.message
+            : t("commands.errors.attachmentRemoveFailed")
+        )
+      );
+    });
+  });
+}
+
+function calculateImageSize(imgMatches) {
+  let totalSize = 0;
+
+  imgMatches.forEach((imgTag) => {
+    const dataSizeMatch = imgTag.match(/data-size="?(\d+)"?/i);
+
+    if (dataSizeMatch) {
+      totalSize += parseInt(dataSizeMatch[1], 10);
+      return;
+    }
+
+    const widthMatch = imgTag.match(/width="?(\d+)"?/i);
+    const heightMatch = imgTag.match(/height="?(\d+)"?/i);
+
+    if (widthMatch && heightMatch) {
+      const width = parseInt(widthMatch[1], 10);
+      const height = parseInt(heightMatch[1], 10);
+      const estimatedSize = Math.round((width * height) / 2000) * 5120;
+      totalSize += estimatedSize;
+      return;
+    }
+
+    totalSize += 51200;
+  });
+
+  return totalSize;
+}
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) {
+    return "";
+  }
+
+  const kilobytes = bytes / 1024;
+
+  if (kilobytes < 1) {
+    return t("units.lessThanOne");
+  }
+
+  if (kilobytes < 1024) {
+    return `${Math.round(kilobytes * 100) / 100} ${t("units.kilobytes")}`;
+  }
+
+  if (kilobytes < 1024 * 1024) {
+    return `${Math.round((kilobytes / 1024) * 100) / 100} ${t("units.megabytes")}`;
+  }
+
+  return `${Math.round((kilobytes / (1024 * 1024)) * 100) / 100} ${t("units.gigabytes")}`;
+}
+
+async function executeWithNotification(event, worker, errorMessage = t("commands.notifications.genericError")) {
+  try {
+    const successMessage = await worker();
+    notify(successMessage);
+  } catch (_error) {
+    notify(errorMessage);
+  } finally {
+    event.completed();
+  }
+}
+
+async function removeImagesCore() {
+  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
+  const imgMatches = htmlBody.match(/<img[^>]*>/gi) || [];
+
+  if (imgMatches.length === 0) {
+    return t("commands.notifications.imagesNone");
+  }
+
+  const cleanedHtml = htmlBody.replace(/<img[^>]*>/gi, "");
+  await setBodyAsync(cleanedHtml, Office.CoercionType.Html);
+
+  const totalSize = calculateImageSize(imgMatches);
+  const sizeText = formatFileSize(totalSize);
+
+  return sizeText
+    ? t("commands.notifications.imagesRemovedWithSize", { count: imgMatches.length, size: sizeText })
+    : t("commands.notifications.imagesRemoved", { count: imgMatches.length });
+}
+
+async function removeAttachmentsCore() {
+  const attachments = await getAttachmentsAsync();
+
+  if (attachments.length === 0) {
+    return t("commands.notifications.attachmentsNone");
+  }
+
+  const totalSize = attachments.reduce((sum, attachment) => {
+    const size = typeof attachment.size === "number" ? attachment.size : 0;
+    return sum + size;
+  }, 0);
+
+  await Promise.all(attachments.map((attachment) => removeAttachmentAsync(attachment.id)));
+
+  const sizeText = formatFileSize(totalSize);
+
+  return sizeText
+    ? t("commands.notifications.attachmentsRemovedWithSize", {
+        count: attachments.length,
+        size: sizeText,
+      })
+    : t("commands.notifications.attachmentsRemoved", { count: attachments.length });
+}
+
+async function keepTwoRepliesCore() {
+  const textBody = await getBodyAsync(Office.CoercionType.Text);
+  const deMatches = [];
+  const deRegex = /De\s*:/gi;
+  let match;
+
+  while ((match = deRegex.exec(textBody)) !== null) {
+    deMatches.push(match.index);
+  }
+
+  if (deMatches.length === 0) {
+    return t("commands.notifications.repliesNone");
+  }
+
+  if (deMatches.length <= 2) {
+    return t("commands.notifications.repliesNoChange", { count: deMatches.length });
+  }
+
+  const segments = [];
+
+  for (let index = 0; index < deMatches.length; index += 1) {
+    const start = deMatches[index];
+    const end = index + 1 < deMatches.length ? deMatches[index + 1] : textBody.length;
+    segments.push(textBody.substring(start, end));
+  }
+
+  let cleanedText = textBody.substring(0, deMatches[0]);
+  cleanedText += segments[0] || "";
+  cleanedText += segments[1] || "";
+
+  await setBodyAsync(cleanedText, Office.CoercionType.Text);
+  return t("commands.notifications.repliesCleaned", { count: deMatches.length });
+}
+
+async function cleanAllCore() {
+  const messages = [];
+
+  try {
+    messages.push(await removeImagesCore());
+  } catch (error) {
+    messages.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
+  }
+
+  try {
+    messages.push(await removeAttachmentsCore());
+  } catch (error) {
+    messages.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
+  }
+
+  try {
+    messages.push(await keepTwoRepliesCore());
+  } catch (error) {
+    messages.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
+  }
+
+  return t("commands.notifications.cleanAllDone", { details: messages.join(" | ") });
+}
+
+function removeImagesCommand(event) {
+  executeWithNotification(event, removeImagesCore, t("commands.notifications.cannotRemoveImages"));
+}
+
+function removeAttachmentsCommand(event) {
+  executeWithNotification(event, removeAttachmentsCore, t("commands.notifications.cannotRemoveAttachments"));
+}
+
+function keepTwoRepliesCommand(event) {
+  executeWithNotification(event, keepTwoRepliesCore, t("commands.notifications.cannotKeepReplies"));
+}
+
+function cleanAllCommand(event) {
+  executeWithNotification(event, cleanAllCore, t("commands.notifications.cannotCleanAll"));
+}
 
 /**
  * Shows a notification when the add-in command is executed.
@@ -16,7 +311,7 @@ Office.onReady(() => {
 function action(event) {
   const message = {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-    message: "Performed action.",
+    message: t("commands.notifications.actionPerformed"),
     icon: "Icon.80x80",
     persistent: true,
   };
@@ -33,3 +328,7 @@ function action(event) {
 
 // Register the function with Office.
 Office.actions.associate("action", action);
+Office.actions.associate("removeImagesCommand", removeImagesCommand);
+Office.actions.associate("removeAttachmentsCommand", removeAttachmentsCommand);
+Office.actions.associate("keepTwoRepliesCommand", keepTwoRepliesCommand);
+Office.actions.associate("cleanAllCommand", cleanAllCommand);
