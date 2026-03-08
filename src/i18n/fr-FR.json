@@ -1,0 +1,73 @@
+{
+  "commands": {
+    "errors": {
+      "bodyReadUnavailable": "Lecture du contenu non disponible.",
+      "bodyReadFailed": "Impossible de lire le contenu de l'email.",
+      "bodyWriteUnavailable": "Modification du contenu non disponible.",
+      "bodyWriteFailed": "Impossible de modifier le contenu de l'email.",
+      "attachmentsUnavailableContext": "Suppression des pièces jointes non disponible dans ce contexte.",
+      "attachmentsUnavailable": "Suppression des pièces jointes non disponible.",
+      "attachmentsReadFailed": "Impossible de récupérer les pièces jointes.",
+      "attachmentRemoveFailed": "Impossible de supprimer la pièce jointe."
+    },
+    "notifications": {
+      "genericError": "❌ Une erreur inattendue est survenue",
+      "imagesNone": "ℹ️ Aucune image à supprimer",
+      "imagesRemoved": "✅ {count} image(s) supprimée(s).",
+      "imagesRemovedWithSize": "✅ {count} image(s) supprimée(s) — {size} économisés",
+      "attachmentsNone": "ℹ️ Aucune pièce jointe à supprimer",
+      "attachmentsRemoved": "✅ {count} pièce(s) jointe(s) supprimée(s).",
+      "attachmentsRemovedWithSize": "✅ {count} pièce(s) jointe(s) supprimée(s) — {size} économisés",
+      "repliesNone": "ℹ️ Aucune réponse à nettoyer",
+      "repliesNoChange": "ℹ️ {count} réponse(s) détectée(s), aucun nettoyage nécessaire",
+      "repliesCleaned": "✅ {count} réponse(s) détectée(s) — 2 conservées",
+      "cleanAllDone": "✅ Nettoyage complet terminé — {details}",
+      "cleanAllImagesPrefix": "Images",
+      "cleanAllAttachmentsPrefix": "Pièces jointes",
+      "cleanAllRepliesPrefix": "Réponses",
+      "cannotRemoveImages": "❌ Impossible de supprimer les images",
+      "cannotRemoveAttachments": "❌ Impossible de supprimer les pièces jointes",
+      "cannotKeepReplies": "❌ Impossible de conserver 2 réponses",
+      "cannotCleanAll": "❌ Impossible d'exécuter le nettoyage complet",
+      "actionPerformed": "Action effectuée."
+    }
+  },
+  "taskpane": {
+    "title": "Module MailLighter",
+    "welcome": "Bienvenue",
+    "cleanupTitle": "Nettoyage du mail",
+    "removeImagesButton": "🖼️ Supprimer les images",
+    "keepRepliesButton": "💬 Garder les 2 derniers replies",
+    "removeAttachmentsButton": "📎 Supprimer les pièces jointes",
+    "cleanAllButton": "🧹 Tout supprimer",
+    "confirmCleanAll": "Êtes-vous sûr de vouloir tout supprimer ?",
+    "yes": "Oui",
+    "no": "Non",
+    "cleaningInProgress": "Nettoyage en cours...",
+    "actionCancelled": "Action annulée.",
+    "bodyEditUnavailable": "❌ Modification du corps non disponible en mode lecture",
+    "bodyReadError": "❌ Erreur de lecture du mail",
+    "imagesRemoved": "✅ {count} image(s) supprimée(s) !",
+    "imagesRemovedWithSize": "✅ {count} image(s) supprimée(s) ! ({size} économisés)",
+    "imagesRemoveError": "❌ Erreur lors de la suppression des images : {details}",
+    "attachmentsNone": "ℹ️ Aucune pièce jointe à supprimer",
+    "attachmentsRemoved": "✅ {count} pièce(s) jointe(s) supprimée(s)!",
+    "attachmentsRemovedWithSize": "✅ {count} pièce(s) jointe(s) supprimée(s)! ({size} économisés)",
+    "attachmentRemoveError": "❌ Erreur suppression PJ : {details}",
+    "attachmentsReadError": "❌ Erreur récupération PJ : {details}",
+    "bodyReadErrorReplies": "❌ Erreur de lecture du mail",
+    "repliesNone": "ℹ️ Aucun reply détecté dans le mail",
+    "repliesNoChange": "ℹ️ {count} reply(s) trouvé(s), moins de 3 donc aucun changement",
+    "repliesCleaned": "✅ Replies nettoyés ({count} trouvés, 2 conservés)!",
+    "repliesCleanError": "❌ Erreur lors du nettoyage des replies : {details}",
+    "cleanAllDone": "✅ Mail complètement nettoyé!",
+    "unknown": "inconnue",
+    "genericError": "❌ Erreur : {details}"
+  },
+  "units": {
+    "kilobytes": "Ko",
+    "megabytes": "Mo",
+    "gigabytes": "Go",
+    "lessThanOne": "< 1 Ko"
+  }
+}
