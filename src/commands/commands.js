@@ -18,6 +18,11 @@ function notify(message, icon = "Icon.80x80") {
     return;
   }
 
+  if (typeof item.notificationMessages.removeAsync === "function") {
+    // Remove legacy sample notification if it exists from older builds.
+    item.notificationMessages.removeAsync("ActionPerformanceNotification");
+  }
+
   item.notificationMessages.replaceAsync("MailLighterNotification", {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     message,
@@ -43,7 +48,9 @@ function getBodyAsync(coercionType) {
 
       reject(
         new Error(
-          result.error && result.error.message ? result.error.message : t("commands.errors.bodyReadFailed")
+          result.error && result.error.message
+            ? result.error.message
+            : t("commands.errors.bodyReadFailed")
         )
       );
     });
@@ -67,7 +74,9 @@ function setBodyAsync(content, coercionType) {
 
       reject(
         new Error(
-          result.error && result.error.message ? result.error.message : t("commands.errors.bodyWriteFailed")
+          result.error && result.error.message
+            ? result.error.message
+            : t("commands.errors.bodyWriteFailed")
         )
       );
     });
@@ -176,15 +185,283 @@ function formatFileSize(bytes) {
   return `${Math.round((kilobytes / (1024 * 1024)) * 100) / 100} ${t("units.gigabytes")}`;
 }
 
-async function executeWithNotification(event, worker, errorMessage = t("commands.notifications.genericError")) {
+async function executeWithNotification(
+  event,
+  worker,
+  errorMessage = t("commands.notifications.genericError")
+) {
   try {
     const successMessage = await worker();
     notify(successMessage);
-  } catch (_error) {
-    notify(errorMessage);
+  } catch (error) {
+    const details = error instanceof Error && error.message ? ` (${error.message})` : "";
+    notify(`${errorMessage}${details}`);
   } finally {
     event.completed();
   }
+}
+
+const MAX_REPLY_BODY_LENGTH = 30000;
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getSelectedDataAsync(coercionType) {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item || typeof item.getSelectedDataAsync !== "function") {
+      reject(new Error(t("commands.errors.selectionUnavailable")));
+      return;
+    }
+
+    item.getSelectedDataAsync(coercionType, (result) => {
+      if (result.status !== Office.AsyncResultStatus.Succeeded) {
+        reject(
+          new Error(
+            result.error && result.error.message
+              ? result.error.message
+              : t("commands.errors.selectionReadFailed")
+          )
+        );
+        return;
+      }
+
+      const selection = result.value && result.value.data ? String(result.value.data) : "";
+
+      resolve(selection);
+    });
+  });
+}
+
+async function getSelectedHtmlAsync() {
+  let htmlSelection = "";
+
+  try {
+    htmlSelection = (await getSelectedDataAsync(Office.CoercionType.Html)).trim();
+  } catch {
+    htmlSelection = "";
+  }
+
+  if (htmlSelection) {
+    const sanitizedSelection = htmlSelection
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+      .replace(/<!--[\s\S]*?-->/g, "");
+
+    if (sanitizedSelection.trim()) {
+      return sanitizedSelection;
+    }
+  }
+
+  let textSelection = "";
+
+  try {
+    textSelection = (await getSelectedDataAsync(Office.CoercionType.Text)).trim();
+  } catch {
+    textSelection = "";
+  }
+
+  if (textSelection) {
+    return toHtmlFromText(textSelection);
+  }
+
+  throw new Error(t("commands.errors.selectionEmpty"));
+}
+
+function toHtmlFromText(text) {
+  return `<div style="white-space: pre-wrap;">${escapeHtml(text || "")}</div>`;
+}
+
+function fitHtmlForReply(html) {
+  const normalized = String(html || "").trim();
+
+  if (normalized.length <= MAX_REPLY_BODY_LENGTH) {
+    return { html: normalized, trimmed: false };
+  }
+
+  const textCandidate = normalized
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const truncatedText = textCandidate.slice(0, MAX_REPLY_BODY_LENGTH / 2);
+
+  return {
+    html: toHtmlFromText(`${truncatedText}...`),
+    trimmed: true,
+  };
+}
+
+async function getPartialHtmlAsync() {
+  try {
+    const selectedHtml = await getSelectedHtmlAsync();
+    const fitted = fitHtmlForReply(selectedHtml);
+
+    return {
+      html: fitted.html,
+      openedWithoutSelection: false,
+      wasTrimmed: fitted.trimmed,
+    };
+  } catch {
+    return {
+      html: "",
+      openedWithoutSelection: true,
+      wasTrimmed: false,
+    };
+  }
+}
+
+function buildPartialSuccessMessage(baseMessage, options) {
+  const notes = [];
+
+  if (options.openedWithoutSelection) {
+    notes.push(t("commands.notifications.partialOpenedWithoutSelection"));
+  }
+
+  if (options.wasTrimmed) {
+    notes.push(t("commands.notifications.partialContentTrimmed"));
+  }
+
+  return notes.length > 0 ? `${baseMessage} ${notes.join(" ")}` : baseMessage;
+}
+
+function displayFormWithFallback(displayFn, htmlBody) {
+  const errors = [];
+
+  const tryInvoke = (argProvided, arg) => {
+    try {
+      if (argProvided) {
+        displayFn(arg);
+      } else {
+        displayFn();
+      }
+
+      return true;
+    } catch (error) {
+      errors.push(error);
+      return false;
+    }
+  };
+
+  if (htmlBody) {
+    if (tryInvoke(true, { htmlBody })) {
+      return;
+    }
+
+    if (tryInvoke(true, htmlBody)) {
+      return;
+    }
+  }
+
+  if (tryInvoke(false)) {
+    return;
+  }
+
+  const lastError = errors.length > 0 ? errors[errors.length - 1] : null;
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+
+  throw new Error(t("commands.notifications.genericError"));
+}
+
+function openReplyFormAsync(replyAll, htmlBody) {
+  const item = Office.context.mailbox.item;
+
+  return new Promise((resolve, reject) => {
+    if (!item) {
+      reject(new Error(t("commands.errors.replyFormUnavailable")));
+      return;
+    }
+
+    const displayFn = replyAll ? item.displayReplyAllForm : item.displayReplyForm;
+    const unavailableError = replyAll
+      ? t("commands.errors.replyAllFormUnavailable")
+      : t("commands.errors.replyFormUnavailable");
+
+    if (typeof displayFn !== "function") {
+      reject(new Error(unavailableError));
+      return;
+    }
+
+    try {
+      displayFormWithFallback(displayFn.bind(item), htmlBody);
+      resolve();
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+}
+
+function getForwardSubject(subject) {
+  const sourceSubject = String(subject || "").trim();
+  const prefix = t("commands.notifications.forwardPrefix");
+
+  if (!sourceSubject) {
+    return prefix;
+  }
+
+  return new RegExp(`^${prefix}\\s*`, "i").test(sourceSubject)
+    ? sourceSubject
+    : `${prefix} ${sourceSubject}`;
+}
+
+function openForwardFormAsync(htmlBody) {
+  const mailbox = Office.context.mailbox;
+  const item = mailbox ? mailbox.item : null;
+
+  return new Promise((resolve, reject) => {
+    try {
+      if (item && typeof item.displayForwardForm === "function") {
+        displayFormWithFallback(item.displayForwardForm.bind(item), htmlBody);
+        resolve();
+        return;
+      }
+
+      if (!mailbox || typeof mailbox.displayNewMessageForm !== "function") {
+        reject(new Error(t("commands.errors.forwardFormUnavailable")));
+        return;
+      }
+
+      const formPayload = {
+        subject: getForwardSubject(item && item.subject ? item.subject : ""),
+      };
+
+      if (htmlBody) {
+        formPayload.htmlBody = htmlBody;
+      }
+
+      mailbox.displayNewMessageForm(formPayload);
+      resolve();
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+}
+
+async function partialReplyCore() {
+  const partial = await getPartialHtmlAsync();
+  await openReplyFormAsync(false, partial.html);
+  return buildPartialSuccessMessage(t("commands.notifications.partialReplyOpened"), partial);
+}
+
+async function partialReplyAllCore() {
+  const partial = await getPartialHtmlAsync();
+  await openReplyFormAsync(true, partial.html);
+  return buildPartialSuccessMessage(t("commands.notifications.partialReplyAllOpened"), partial);
+}
+
+async function partialForwardCore() {
+  const partial = await getPartialHtmlAsync();
+  await openForwardFormAsync(partial.html);
+  return buildPartialSuccessMessage(t("commands.notifications.partialForwardOpened"), partial);
 }
 
 async function removeImagesCore() {
@@ -202,7 +479,10 @@ async function removeImagesCore() {
   const sizeText = formatFileSize(totalSize);
 
   return sizeText
-    ? t("commands.notifications.imagesRemovedWithSize", { count: imgMatches.length, size: sizeText })
+    ? t("commands.notifications.imagesRemovedWithSize", {
+        count: imgMatches.length,
+        size: sizeText,
+      })
     : t("commands.notifications.imagesRemoved", { count: imgMatches.length });
 }
 
@@ -293,7 +573,11 @@ function removeImagesCommand(event) {
 }
 
 function removeAttachmentsCommand(event) {
-  executeWithNotification(event, removeAttachmentsCore, t("commands.notifications.cannotRemoveAttachments"));
+  executeWithNotification(
+    event,
+    removeAttachmentsCore,
+    t("commands.notifications.cannotRemoveAttachments")
+  );
 }
 
 function keepTwoRepliesCommand(event) {
@@ -304,31 +588,31 @@ function cleanAllCommand(event) {
   executeWithNotification(event, cleanAllCore, t("commands.notifications.cannotCleanAll"));
 }
 
-/**
- * Shows a notification when the add-in command is executed.
- * @param event {Office.AddinCommands.Event}
- */
-function action(event) {
-  const message = {
-    type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-    message: t("commands.notifications.actionPerformed"),
-    icon: "Icon.80x80",
-    persistent: true,
-  };
+function partialReplyCommand(event) {
+  executeWithNotification(event, partialReplyCore, t("commands.notifications.cannotPartialReply"));
+}
 
-  // Show a notification message.
-  Office.context.mailbox.item.notificationMessages.replaceAsync(
-    "ActionPerformanceNotification",
-    message
+function partialReplyAllCommand(event) {
+  executeWithNotification(
+    event,
+    partialReplyAllCore,
+    t("commands.notifications.cannotPartialReplyAll")
   );
+}
 
-  // Be sure to indicate when the add-in command function is complete.
-  event.completed();
+function partialForwardCommand(event) {
+  executeWithNotification(
+    event,
+    partialForwardCore,
+    t("commands.notifications.cannotPartialForward")
+  );
 }
 
 // Register the function with Office.
-Office.actions.associate("action", action);
 Office.actions.associate("removeImagesCommand", removeImagesCommand);
 Office.actions.associate("removeAttachmentsCommand", removeAttachmentsCommand);
 Office.actions.associate("keepTwoRepliesCommand", keepTwoRepliesCommand);
 Office.actions.associate("cleanAllCommand", cleanAllCommand);
+Office.actions.associate("partialReplyCommand", partialReplyCommand);
+Office.actions.associate("partialReplyAllCommand", partialReplyAllCommand);
+Office.actions.associate("partialForwardCommand", partialForwardCommand);

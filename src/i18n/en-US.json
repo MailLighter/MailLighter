@@ -8,7 +8,13 @@
       "attachmentsUnavailableContext": "Attachment removal is not available in this context.",
       "attachmentsUnavailable": "Attachment removal is not available.",
       "attachmentsReadFailed": "Unable to read attachments.",
-      "attachmentRemoveFailed": "Unable to remove attachment."
+      "attachmentRemoveFailed": "Unable to remove attachment.",
+      "selectionUnavailable": "Selected text is not available in this context.",
+      "selectionReadFailed": "Unable to read selected text.",
+      "selectionEmpty": "Please select part of the email body first.",
+      "replyFormUnavailable": "Reply form is not available.",
+      "replyAllFormUnavailable": "Reply-all form is not available.",
+      "forwardFormUnavailable": "Forward form is not available."
     },
     "notifications": {
       "genericError": "❌ An unexpected error occurred",
@@ -29,7 +35,20 @@
       "cannotRemoveAttachments": "❌ Unable to remove attachments",
       "cannotKeepReplies": "❌ Unable to keep 2 replies",
       "cannotCleanAll": "❌ Unable to run full cleanup",
-      "actionPerformed": "Action completed."
+      "actionPerformed": "Action completed.",
+      "partialReplyOpened": "✅ Partial reply draft opened.",
+      "partialReplyAllOpened": "✅ Partial reply-all draft opened.",
+      "partialForwardOpened": "✅ Partial forward draft opened.",
+      "partialOpenedWithoutSelection": "ℹ️ Selection wasn't available, draft opened without partial insertion.",
+      "partialContentTrimmed": "ℹ️ Content was shortened to fit Outlook draft size limits.",
+      "cannotPartialReply": "❌ Unable to create partial reply.",
+      "cannotPartialReplyAll": "❌ Unable to create partial reply-all.",
+      "cannotPartialForward": "❌ Unable to create partial forward.",
+      "forwardPrefix": "FW:",
+      "forwardLabelFrom": "From:",
+      "forwardLabelSent": "Sent:",
+      "forwardLabelSubject": "Subject:",
+      "unknownValue": "unknown"
     }
   },
   "taskpane": {
