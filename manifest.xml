@@ -2,13 +2,15 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <Id>eef5c758-5e9f-489c-8351-e49c506e437e</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>AAE</ProviderName>
+  <ProviderName>MailLighter</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="MailLighter">
     <Override Locale="fr-fr" Value="MailLighter"/>
+    <Override Locale="es-es" Value="MailLighter"/>
   </DisplayName>
   <Description DefaultValue="The best way to clean your emails.">
     <Override Locale="fr-fr" Value="La meilleure façon de nettoyer vos emails."/>
+    <Override Locale="es-es" Value="La mejor manera de limpiar tus correos."/>
   </Description>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
@@ -55,9 +57,9 @@
           <FunctionFile resid="Commands.Url"/>
           <ExtensionPoint xsi:type="MessageReadCommandSurface">
             <OfficeTab id="TabDefault">
-              <Group id="msgReadGroup">
+              <Group id="msgReadPartialGroup">
                 <Label resid="GroupLabel"/>
-                <Control xsi:type="Menu" id="msgReadMenuButton">
+                <Control xsi:type="Menu" id="msgReadPartialMenuButton">
                   <Label resid="MenuButton.Label"/>
                   <Supertip>
                     <Title resid="MenuButton.Label"/>
@@ -69,11 +71,11 @@
                     <bt:Image size="80" resid="Icon.80x80"/>
                   </Icon>
                   <Items>
-                    <Item id="msgReadRemoveImagesItem">
-                      <Label resid="RemoveImages.Label"/>
+                    <Item id="msgReadPartialReplyItem">
+                      <Label resid="PartialReply.Label"/>
                       <Supertip>
-                        <Title resid="RemoveImages.Label"/>
-                        <Description resid="RemoveImages.Tooltip"/>
+                        <Title resid="PartialReply.Label"/>
+                        <Description resid="PartialReply.Tooltip"/>
                       </Supertip>
                       <Icon>
                         <bt:Image size="16" resid="Icon.16x16"/>
@@ -81,14 +83,14 @@
                         <bt:Image size="80" resid="Icon.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
-                        <FunctionName>removeImagesCommand</FunctionName>
+                        <FunctionName>partialReplyCommand</FunctionName>
                       </Action>
                     </Item>
-                    <Item id="msgReadRemoveAttachmentsItem">
-                      <Label resid="RemoveAttachments.Label"/>
+                    <Item id="msgReadPartialReplyAllItem">
+                      <Label resid="PartialReplyAll.Label"/>
                       <Supertip>
-                        <Title resid="RemoveAttachments.Label"/>
-                        <Description resid="RemoveAttachments.Tooltip"/>
+                        <Title resid="PartialReplyAll.Label"/>
+                        <Description resid="PartialReplyAll.Tooltip"/>
                       </Supertip>
                       <Icon>
                         <bt:Image size="16" resid="Icon.16x16"/>
@@ -96,14 +98,14 @@
                         <bt:Image size="80" resid="Icon.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
-                        <FunctionName>removeAttachmentsCommand</FunctionName>
+                        <FunctionName>partialReplyAllCommand</FunctionName>
                       </Action>
                     </Item>
-                    <Item id="msgReadKeepTwoRepliesItem">
-                      <Label resid="KeepTwoReplies.Label"/>
+                    <Item id="msgReadPartialForwardItem">
+                      <Label resid="PartialForward.Label"/>
                       <Supertip>
-                        <Title resid="KeepTwoReplies.Label"/>
-                        <Description resid="KeepTwoReplies.Tooltip"/>
+                        <Title resid="PartialForward.Label"/>
+                        <Description resid="PartialForward.Tooltip"/>
                       </Supertip>
                       <Icon>
                         <bt:Image size="16" resid="Icon.16x16"/>
@@ -111,22 +113,7 @@
                         <bt:Image size="80" resid="Icon.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
-                        <FunctionName>keepTwoRepliesCommand</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgReadCleanAllItem">
-                      <Label resid="CleanAll.Label"/>
-                      <Supertip>
-                        <Title resid="CleanAll.Label"/>
-                        <Description resid="CleanAll.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>cleanAllCommand</FunctionName>
+                        <FunctionName>partialForwardCommand</FunctionName>
                       </Action>
                     </Item>
                   </Items>
@@ -230,38 +217,73 @@
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="MailLighter Add-in">
           <bt:Override Locale="fr-fr" Value="MailLighter Add-in"/>
+          <bt:Override Locale="es-es" Value="Complemento MailLighter"/>
         </bt:String>
         <bt:String id="MenuButton.Label" DefaultValue="MailLighter">
           <bt:Override Locale="fr-fr" Value="MailLighter"/>
+          <bt:Override Locale="es-es" Value="MailLighter"/>
         </bt:String>
         <bt:String id="RemoveImages.Label" DefaultValue="Remove images">
           <bt:Override Locale="fr-fr" Value="Supprimer les images"/>
+          <bt:Override Locale="es-es" Value="Eliminar imágenes"/>
         </bt:String>
         <bt:String id="RemoveAttachments.Label" DefaultValue="Remove attachments">
           <bt:Override Locale="fr-fr" Value="Supprimer les pièces jointes"/>
+          <bt:Override Locale="es-es" Value="Eliminar adjuntos"/>
         </bt:String>
         <bt:String id="KeepTwoReplies.Label" DefaultValue="Keep latest 2 replies">
           <bt:Override Locale="fr-fr" Value="Conserver 2 réponses"/>
+          <bt:Override Locale="es-es" Value="Conservar las últimas 2 respuestas"/>
         </bt:String>
         <bt:String id="CleanAll.Label" DefaultValue="Full cleanup">
           <bt:Override Locale="fr-fr" Value="Nettoyage complet"/>
+          <bt:Override Locale="es-es" Value="Limpieza completa"/>
+        </bt:String>
+        <bt:String id="PartialReply.Label" DefaultValue="Partial reply">
+          <bt:Override Locale="fr-fr" Value="Reponse partielle"/>
+          <bt:Override Locale="es-es" Value="Respuesta parcial"/>
+        </bt:String>
+        <bt:String id="PartialReplyAll.Label" DefaultValue="Partial reply all">
+          <bt:Override Locale="fr-fr" Value="Repondre a tous partiel"/>
+          <bt:Override Locale="es-es" Value="Responder a todos parcial"/>
+        </bt:String>
+        <bt:String id="PartialForward.Label" DefaultValue="Partial forward">
+          <bt:Override Locale="fr-fr" Value="Transfert partiel"/>
+          <bt:Override Locale="es-es" Value="Reenvío parcial"/>
         </bt:String>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="MenuButton.Tooltip" DefaultValue="Open MailLighter actions menu.">
           <bt:Override Locale="fr-fr" Value="Ouvre le menu d’actions MailLighter."/>
+          <bt:Override Locale="es-es" Value="Abre el menú de acciones de MailLighter."/>
         </bt:String>
         <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current email.">
           <bt:Override Locale="fr-fr" Value="Supprime les images du mail courant."/>
+          <bt:Override Locale="es-es" Value="Elimina las imágenes del correo actual."/>
         </bt:String>
         <bt:String id="RemoveAttachments.Tooltip" DefaultValue="Remove attachments from the current draft.">
           <bt:Override Locale="fr-fr" Value="Supprime les pièces jointes du brouillon courant."/>
+          <bt:Override Locale="es-es" Value="Elimina los adjuntos del borrador actual."/>
         </bt:String>
         <bt:String id="KeepTwoReplies.Tooltip" DefaultValue="Keep only the latest 2 replies.">
           <bt:Override Locale="fr-fr" Value="Conserve uniquement les deux derniers replies."/>
+          <bt:Override Locale="es-es" Value="Conserva solo las 2 respuestas más recientes."/>
         </bt:String>
         <bt:String id="CleanAll.Tooltip" DefaultValue="Run all cleanup actions.">
           <bt:Override Locale="fr-fr" Value="Applique toutes les actions de nettoyage."/>
+          <bt:Override Locale="es-es" Value="Ejecuta todas las acciones de limpieza."/>
+        </bt:String>
+        <bt:String id="PartialReply.Tooltip" DefaultValue="Create a reply draft that keeps only your selected content.">
+          <bt:Override Locale="fr-fr" Value="Cree un brouillon de reponse qui ne conserve que votre selection."/>
+          <bt:Override Locale="es-es" Value="Crea un borrador de respuesta que conserva solo el contenido seleccionado."/>
+        </bt:String>
+        <bt:String id="PartialReplyAll.Tooltip" DefaultValue="Create a reply-all draft that keeps only your selected content.">
+          <bt:Override Locale="fr-fr" Value="Cree un brouillon de repondre a tous qui ne conserve que votre selection."/>
+          <bt:Override Locale="es-es" Value="Crea un borrador de respuesta a todos que conserva solo el contenido seleccionado."/>
+        </bt:String>
+        <bt:String id="PartialForward.Tooltip" DefaultValue="Create a forward draft that keeps only your selected content.">
+          <bt:Override Locale="fr-fr" Value="Cree un brouillon de transfert qui ne conserve que votre selection."/>
+          <bt:Override Locale="es-es" Value="Crea un borrador de reenvío que conserva solo el contenido seleccionado."/>
         </bt:String>
       </bt:LongStrings>
     </Resources>
