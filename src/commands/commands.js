@@ -6,6 +6,12 @@
 /* global Office */
 
 import { t } from "../shared/i18n";
+import {
+  sanitizeHtml,
+  toHtmlFromText,
+  displayFormWithFallback,
+  getForwardSubject,
+} from "../shared/office-helpers";
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -31,108 +37,66 @@ function notify(message, icon = "Icon.80x80") {
   });
 }
 
-function getBodyAsync(coercionType) {
-  const item = Office.context.mailbox.item;
-
+function officeAsync(target, method, unavailableKey, failedKey, ...args) {
   return new Promise((resolve, reject) => {
-    if (!item || !item.body || typeof item.body.getAsync !== "function") {
-      reject(new Error(t("commands.errors.bodyReadUnavailable")));
+    if (!target || typeof target[method] !== "function") {
+      reject(new Error(t(unavailableKey)));
       return;
     }
 
-    item.body.getAsync(coercionType, (result) => {
+    target[method](...args, (result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve(result.value || "");
+        resolve(result.value);
         return;
       }
 
-      reject(
-        new Error(
-          result.error && result.error.message
-            ? result.error.message
-            : t("commands.errors.bodyReadFailed")
-        )
-      );
+      reject(new Error(result.error && result.error.message ? result.error.message : t(failedKey)));
     });
   });
 }
 
+function getBodyAsync(coercionType) {
+  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
+  return officeAsync(
+    body,
+    "getAsync",
+    "commands.errors.bodyReadUnavailable",
+    "commands.errors.bodyReadFailed",
+    coercionType
+  ).then((v) => v || "");
+}
+
 function setBodyAsync(content, coercionType) {
-  const item = Office.context.mailbox.item;
-
-  return new Promise((resolve, reject) => {
-    if (!item || !item.body || typeof item.body.setAsync !== "function") {
-      reject(new Error(t("commands.errors.bodyWriteUnavailable")));
-      return;
-    }
-
-    item.body.setAsync(content, { coercionType }, (result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve();
-        return;
-      }
-
-      reject(
-        new Error(
-          result.error && result.error.message
-            ? result.error.message
-            : t("commands.errors.bodyWriteFailed")
-        )
-      );
-    });
-  });
+  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
+  return officeAsync(
+    body,
+    "setAsync",
+    "commands.errors.bodyWriteUnavailable",
+    "commands.errors.bodyWriteFailed",
+    content,
+    { coercionType }
+  );
 }
 
 function getAttachmentsAsync() {
   const item = Office.context.mailbox.item;
-
-  return new Promise((resolve, reject) => {
-    if (!item || typeof item.getAttachmentsAsync !== "function") {
-      reject(new Error(t("commands.errors.attachmentsUnavailableContext")));
-      return;
-    }
-
-    item.getAttachmentsAsync((result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve(result.value || []);
-        return;
-      }
-
-      reject(
-        new Error(
-          result.error && result.error.message
-            ? result.error.message
-            : t("commands.errors.attachmentsReadFailed")
-        )
-      );
-    });
-  });
+  return officeAsync(
+    item,
+    "getAttachmentsAsync",
+    "commands.errors.attachmentsUnavailableContext",
+    "commands.errors.attachmentsReadFailed"
+  ).then((v) => v || []);
 }
 
 function removeAttachmentAsync(attachmentId) {
   const item = Office.context.mailbox.item;
-
-  return new Promise((resolve, reject) => {
-    if (!item || typeof item.removeAttachmentAsync !== "function") {
-      reject(new Error(t("commands.errors.attachmentsUnavailable")));
-      return;
-    }
-
-    item.removeAttachmentAsync(attachmentId, (result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve();
-        return;
-      }
-
-      reject(
-        new Error(
-          result.error && result.error.message
-            ? result.error.message
-            : t("commands.errors.attachmentRemoveFailed")
-        )
-      );
-    });
-  });
+  return officeAsync(
+    item,
+    "removeAttachmentAsync",
+    "commands.errors.attachmentsUnavailable",
+    "commands.errors.attachmentRemoveFailed",
+    attachmentId
+  );
 }
 
 function calculateImageSize(imgMatches) {
@@ -203,41 +167,16 @@ async function executeWithNotification(
 
 const MAX_REPLY_BODY_LENGTH = 30000;
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 function getSelectedDataAsync(coercionType) {
   const item = Office.context.mailbox.item;
-
-  return new Promise((resolve, reject) => {
-    if (!item || typeof item.getSelectedDataAsync !== "function") {
-      reject(new Error(t("commands.errors.selectionUnavailable")));
-      return;
-    }
-
-    item.getSelectedDataAsync(coercionType, (result) => {
-      if (result.status !== Office.AsyncResultStatus.Succeeded) {
-        reject(
-          new Error(
-            result.error && result.error.message
-              ? result.error.message
-              : t("commands.errors.selectionReadFailed")
-          )
-        );
-        return;
-      }
-
-      const selection = result.value && result.value.data ? String(result.value.data) : "";
-
-      resolve(selection);
-    });
-  });
+  return officeAsync(
+    item,
+    "getSelectedDataAsync",
+    "commands.errors.selectionUnavailable",
+    "commands.errors.selectionReadFailed",
+    coercionType
+  ).then((v) => (v && v.data ? String(v.data) : ""));
 }
 
 async function getSelectedHtmlAsync() {
@@ -250,10 +189,7 @@ async function getSelectedHtmlAsync() {
   }
 
   if (htmlSelection) {
-    const sanitizedSelection = htmlSelection
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-      .replace(/<!--[\s\S]*?-->/g, "");
+    const sanitizedSelection = sanitizeHtml(htmlSelection);
 
     if (sanitizedSelection.trim()) {
       return sanitizedSelection;
@@ -275,9 +211,6 @@ async function getSelectedHtmlAsync() {
   throw new Error(t("commands.errors.selectionEmpty"));
 }
 
-function toHtmlFromText(text) {
-  return `<div style="white-space: pre-wrap;">${escapeHtml(text || "")}</div>`;
-}
 
 function fitHtmlForReply(html) {
   const normalized = String(html || "").trim();
@@ -331,119 +264,59 @@ function buildPartialSuccessMessage(baseMessage, options) {
   return notes.length > 0 ? `${baseMessage} ${notes.join(" ")}` : baseMessage;
 }
 
-function displayFormWithFallback(displayFn, htmlBody) {
-  const errors = [];
-
-  const tryInvoke = (argProvided, arg) => {
-    try {
-      if (argProvided) {
-        displayFn(arg);
-      } else {
-        displayFn();
-      }
-
-      return true;
-    } catch (error) {
-      errors.push(error);
-      return false;
-    }
-  };
-
-  if (htmlBody) {
-    if (tryInvoke(true, { htmlBody })) {
-      return;
-    }
-
-    if (tryInvoke(true, htmlBody)) {
-      return;
-    }
-  }
-
-  if (tryInvoke(false)) {
-    return;
-  }
-
-  const lastError = errors.length > 0 ? errors[errors.length - 1] : null;
-
-  if (lastError instanceof Error) {
-    throw lastError;
-  }
-
-  throw new Error(t("commands.notifications.genericError"));
-}
 
 function openReplyFormAsync(replyAll, htmlBody) {
   const item = Office.context.mailbox.item;
+  const errorKey = replyAll
+    ? "commands.errors.replyAllFormUnavailable"
+    : "commands.errors.replyFormUnavailable";
 
-  return new Promise((resolve, reject) => {
-    if (!item) {
-      reject(new Error(t("commands.errors.replyFormUnavailable")));
-      return;
-    }
-
-    const displayFn = replyAll ? item.displayReplyAllForm : item.displayReplyForm;
-    const unavailableError = replyAll
-      ? t("commands.errors.replyAllFormUnavailable")
-      : t("commands.errors.replyFormUnavailable");
-
-    if (typeof displayFn !== "function") {
-      reject(new Error(unavailableError));
-      return;
-    }
-
-    try {
-      displayFormWithFallback(displayFn.bind(item), htmlBody);
-      resolve();
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-  });
-}
-
-function getForwardSubject(subject) {
-  const sourceSubject = String(subject || "").trim();
-  const prefix = t("commands.notifications.forwardPrefix");
-
-  if (!sourceSubject) {
-    return prefix;
+  if (!item) {
+    return Promise.reject(new Error(t(errorKey)));
   }
 
-  return new RegExp(`^${prefix}\\s*`, "i").test(sourceSubject)
-    ? sourceSubject
-    : `${prefix} ${sourceSubject}`;
+  const displayFn = replyAll ? item.displayReplyAllForm : item.displayReplyForm;
+
+  if (typeof displayFn !== "function") {
+    return Promise.reject(new Error(t(errorKey)));
+  }
+
+  try {
+    displayFormWithFallback(displayFn.bind(item), htmlBody);
+    return Promise.resolve();
+  } catch (error) {
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+  }
 }
+
 
 function openForwardFormAsync(htmlBody) {
   const mailbox = Office.context.mailbox;
   const item = mailbox ? mailbox.item : null;
 
-  return new Promise((resolve, reject) => {
-    try {
-      if (item && typeof item.displayForwardForm === "function") {
-        displayFormWithFallback(item.displayForwardForm.bind(item), htmlBody);
-        resolve();
-        return;
-      }
-
-      if (!mailbox || typeof mailbox.displayNewMessageForm !== "function") {
-        reject(new Error(t("commands.errors.forwardFormUnavailable")));
-        return;
-      }
-
-      const formPayload = {
-        subject: getForwardSubject(item && item.subject ? item.subject : ""),
-      };
-
-      if (htmlBody) {
-        formPayload.htmlBody = htmlBody;
-      }
-
-      mailbox.displayNewMessageForm(formPayload);
-      resolve();
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)));
+  try {
+    if (item && typeof item.displayForwardForm === "function") {
+      displayFormWithFallback(item.displayForwardForm.bind(item), htmlBody);
+      return Promise.resolve();
     }
-  });
+
+    if (!mailbox || typeof mailbox.displayNewMessageForm !== "function") {
+      return Promise.reject(new Error(t("commands.errors.forwardFormUnavailable")));
+    }
+
+    const formPayload = {
+      subject: getForwardSubject(item && item.subject ? item.subject : ""),
+    };
+
+    if (htmlBody) {
+      formPayload.htmlBody = htmlBody;
+    }
+
+    mailbox.displayNewMessageForm(formPayload);
+    return Promise.resolve();
+  } catch (error) {
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+  }
 }
 
 async function partialReplyCore() {
@@ -487,7 +360,9 @@ async function removeImagesCore() {
 }
 
 async function removeAttachmentsCore() {
-  const attachments = await getAttachmentsAsync();
+  const allAttachments = await getAttachmentsAsync();
+  // Keep only real file attachments, not inline images (signatures, logos, etc.)
+  const attachments = allAttachments.filter((a) => !a.isInline);
 
   if (attachments.length === 0) {
     return t("commands.notifications.attachmentsNone");
@@ -510,38 +385,124 @@ async function removeAttachmentsCore() {
     : t("commands.notifications.attachmentsRemoved", { count: attachments.length });
 }
 
-async function keepTwoRepliesCore() {
-  const textBody = await getBodyAsync(Office.CoercionType.Text);
-  const deMatches = [];
-  const deRegex = /De\s*:/gi;
+function collectRegexPositions(htmlBody, regex, headerCheck) {
+  const positions = [];
   let match;
-
-  while ((match = deRegex.exec(textBody)) !== null) {
-    deMatches.push(match.index);
+  while ((match = regex.exec(htmlBody)) !== null) {
+    if (headerCheck) {
+      const after = htmlBody.substring(match.index, match.index + 500);
+      if (!headerCheck.test(after)) continue;
+    }
+    positions.push(match.index);
   }
+  return positions;
+}
 
-  if (deMatches.length === 0) {
+function findTextSeparators(htmlBody) {
+  // Search for "De :" / "From :" confirmed by a second standard email header keyword
+  // (Envoyé/Sent, Objet/Subject, etc.) within 1500 chars.
+  // Allows HTML tags and entities between keyword and colon to handle all Outlook variants
+  // (e.g. <b>De</b>&nbsp;: or Envoy&eacute; :).
+  const TAG_OR_GAP = "(?:\\s|<[^>]*>|&\\w+;|&#\\d+;|\\xA0)*";
+  const fromRegex = new RegExp(
+    "\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":",
+    "gi"
+  );
+  // Confirm with any standard reply header field: Envoyé/Sent, Objet/Subject, À/To, Cc.
+  // "Objet" and "Subject" have no accents so they survive any HTML encoding.
+  const confirmRegex = new RegExp(
+    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
+      "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
+      TAG_OR_GAP +
+      ":",
+    "i"
+  );
+
+  const positions = [];
+  let match;
+  while ((match = fromRegex.exec(htmlBody)) !== null) {
+    const after = htmlBody.substring(match.index, match.index + 1500);
+    if (!confirmRegex.test(after)) continue;
+    // Walk back to the nearest block-level opening tag for a clean cut point
+    const lookback = htmlBody.substring(Math.max(0, match.index - 500), match.index);
+    const blockTag = lookback.match(/.*(<(?:p|div|tr|li)\b[^>]*>)/is);
+    const cutPos = blockTag
+      ? match.index - lookback.length + lookback.lastIndexOf(blockTag[1])
+      : match.index;
+    // Deduplicate: skip if very close to previous position
+    if (positions.length > 0 && cutPos - positions[positions.length - 1] < 200) continue;
+    positions.push(cutPos);
+  }
+  return positions;
+}
+
+function findReplySeparators(htmlBody) {
+  const headerPattern = /\b(From|De|Von|Da|Van|Fra)\s*(&nbsp;|\xA0)?\s*:/i;
+
+  // Strategy 1: divRplyFwdMsg ID (New Outlook, OWA)
+  const divPositions = collectRegexPositions(
+    htmlBody,
+    /<div[^>]*\bid\s*=\s*["'](?:x_)*divRplyFwdMsg["'][^>]*>/gi
+  );
+
+  // Strategy 2: border-top styled div (Desktop Outlook / Word)
+  const borderPositions = collectRegexPositions(
+    htmlBody,
+    /<div[^>]*border-top\s*:\s*solid\s[^>]*>/gi,
+    headerPattern
+  );
+
+  // Strategy 3: <hr> followed by reply header
+  const hrPositions = collectRegexPositions(htmlBody, /<hr[^>]*>/gi, headerPattern);
+
+  // Strategy 4: Text-based De:/From: + Objet:/Subject: (handles all HTML encodings)
+  const textPositions = findTextSeparators(htmlBody);
+
+  // Return whichever strategy found the most separators
+  let best = divPositions;
+  if (borderPositions.length > best.length) best = borderPositions;
+  if (hrPositions.length > best.length) best = hrPositions;
+  if (textPositions.length > best.length) best = textPositions;
+  return best;
+}
+
+async function keepTwoRepliesCore() {
+  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
+  const separators = findReplySeparators(htmlBody);
+
+  if (separators.length === 0) {
     return t("commands.notifications.repliesNone");
   }
 
-  if (deMatches.length <= 2) {
-    return t("commands.notifications.repliesNoChange", { count: deMatches.length });
+  if (separators.length <= 2) {
+    return t("commands.notifications.repliesNoChange", { count: separators.length });
   }
 
-  const segments = [];
+  // Cut just before the 3rd reply separator.
+  // Also pull the cut point back past any visual separator (hr or underscore line)
+  // that immediately precedes the 3rd header, so it gets removed too.
+  let cutPoint = separators[2];
+  const before = htmlBody.substring(0, cutPoint);
 
-  for (let index = 0; index < deMatches.length; index += 1) {
-    const start = deMatches[index];
-    const end = index + 1 < deMatches.length ? deMatches[index + 1] : textBody.length;
-    segments.push(textBody.substring(start, end));
+  const lastHr = before.lastIndexOf("<hr");
+  if (lastHr >= 0 && cutPoint - lastHr < 500) {
+    cutPoint = lastHr;
+  } else {
+    // Look for the last underscore separator block before cutPoint
+    let lastUnderscoreIdx = -1;
+    const underscoreRe = /_{10,}/g;
+    let m;
+    while ((m = underscoreRe.exec(before)) !== null) {
+      lastUnderscoreIdx = m.index;
+    }
+    if (lastUnderscoreIdx >= 0 && cutPoint - lastUnderscoreIdx < 2000) {
+      const tagStart = before.lastIndexOf("<", lastUnderscoreIdx);
+      cutPoint = tagStart >= 0 ? tagStart : lastUnderscoreIdx;
+    }
   }
 
-  let cleanedText = textBody.substring(0, deMatches[0]);
-  cleanedText += segments[0] || "";
-  cleanedText += segments[1] || "";
-
-  await setBodyAsync(cleanedText, Office.CoercionType.Text);
-  return t("commands.notifications.repliesCleaned", { count: deMatches.length });
+  await setBodyAsync(htmlBody.substring(0, cutPoint), Office.CoercionType.Html);
+  return t("commands.notifications.repliesCleaned", { count: separators.length });
 }
 
 async function cleanAllCore() {
@@ -568,51 +529,17 @@ async function cleanAllCore() {
   return t("commands.notifications.cleanAllDone", { details: messages.join(" | ") });
 }
 
-function removeImagesCommand(event) {
-  executeWithNotification(event, removeImagesCore, t("commands.notifications.cannotRemoveImages"));
-}
-
-function removeAttachmentsCommand(event) {
-  executeWithNotification(
-    event,
-    removeAttachmentsCore,
-    t("commands.notifications.cannotRemoveAttachments")
-  );
-}
-
-function keepTwoRepliesCommand(event) {
-  executeWithNotification(event, keepTwoRepliesCore, t("commands.notifications.cannotKeepReplies"));
-}
-
-function cleanAllCommand(event) {
-  executeWithNotification(event, cleanAllCore, t("commands.notifications.cannotCleanAll"));
-}
-
-function partialReplyCommand(event) {
-  executeWithNotification(event, partialReplyCore, t("commands.notifications.cannotPartialReply"));
-}
-
-function partialReplyAllCommand(event) {
-  executeWithNotification(
-    event,
-    partialReplyAllCore,
-    t("commands.notifications.cannotPartialReplyAll")
-  );
-}
-
-function partialForwardCommand(event) {
-  executeWithNotification(
-    event,
-    partialForwardCore,
-    t("commands.notifications.cannotPartialForward")
-  );
-}
-
-// Register the function with Office.
-Office.actions.associate("removeImagesCommand", removeImagesCommand);
-Office.actions.associate("removeAttachmentsCommand", removeAttachmentsCommand);
-Office.actions.associate("keepTwoRepliesCommand", keepTwoRepliesCommand);
-Office.actions.associate("cleanAllCommand", cleanAllCommand);
-Office.actions.associate("partialReplyCommand", partialReplyCommand);
-Office.actions.associate("partialReplyAllCommand", partialReplyAllCommand);
-Office.actions.associate("partialForwardCommand", partialForwardCommand);
+// Register all commands with Office.
+[
+  ["removeImagesCommand", removeImagesCore, "cannotRemoveImages"],
+  ["removeAttachmentsCommand", removeAttachmentsCore, "cannotRemoveAttachments"],
+  ["keepTwoRepliesCommand", keepTwoRepliesCore, "cannotKeepReplies"],
+  ["cleanAllCommand", cleanAllCore, "cannotCleanAll"],
+  ["partialReplyCommand", partialReplyCore, "cannotPartialReply"],
+  ["partialReplyAllCommand", partialReplyAllCore, "cannotPartialReplyAll"],
+  ["partialForwardCommand", partialForwardCore, "cannotPartialForward"],
+].forEach(([name, core, errorKey]) => {
+  Office.actions.associate(name, (event) => {
+    executeWithNotification(event, core, t(`commands.notifications.${errorKey}`));
+  });
+});
