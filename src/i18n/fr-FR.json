@@ -35,7 +35,6 @@
       "cannotRemoveAttachments": "❌ Impossible de supprimer les pièces jointes",
       "cannotKeepReplies": "❌ Impossible de conserver 2 réponses",
       "cannotCleanAll": "❌ Impossible d'exécuter le nettoyage complet",
-      "actionPerformed": "Action effectuée.",
       "partialReplyOpened": "✅ Brouillon de réponse partielle ouvert.",
       "partialReplyAllOpened": "✅ Brouillon de réponse à tous partielle ouvert.",
       "partialForwardOpened": "✅ Brouillon de transfert partiel ouvert.",
@@ -44,49 +43,19 @@
       "cannotPartialReply": "❌ Impossible de créer la réponse partielle.",
       "cannotPartialReplyAll": "❌ Impossible de créer la réponse à tous partielle.",
       "cannotPartialForward": "❌ Impossible de créer le transfert partiel.",
-      "forwardPrefix": "TR:",
-      "forwardLabelFrom": "De :",
-      "forwardLabelSent": "Envoyé :",
-      "forwardLabelSubject": "Objet :",
-      "unknownValue": "inconnu"
+      "forwardPrefix": "TR:"
     }
-  },
-  "taskpane": {
-    "title": "Module MailLighter",
-    "welcome": "Bienvenue",
-    "cleanupTitle": "Nettoyage du mail",
-    "removeImagesButton": "🖼️ Supprimer les images",
-    "keepRepliesButton": "💬 Garder les 2 derniers replies",
-    "removeAttachmentsButton": "📎 Supprimer les pièces jointes",
-    "cleanAllButton": "🧹 Tout supprimer",
-    "confirmCleanAll": "Êtes-vous sûr de vouloir tout supprimer ?",
-    "yes": "Oui",
-    "no": "Non",
-    "cleaningInProgress": "Nettoyage en cours...",
-    "actionCancelled": "Action annulée.",
-    "bodyEditUnavailable": "❌ Modification du corps non disponible en mode lecture",
-    "bodyReadError": "❌ Erreur de lecture du mail",
-    "imagesRemoved": "✅ {count} image(s) supprimée(s) !",
-    "imagesRemovedWithSize": "✅ {count} image(s) supprimée(s) ! ({size} économisés)",
-    "imagesRemoveError": "❌ Erreur lors de la suppression des images : {details}",
-    "attachmentsNone": "ℹ️ Aucune pièce jointe à supprimer",
-    "attachmentsRemoved": "✅ {count} pièce(s) jointe(s) supprimée(s)!",
-    "attachmentsRemovedWithSize": "✅ {count} pièce(s) jointe(s) supprimée(s)! ({size} économisés)",
-    "attachmentRemoveError": "❌ Erreur suppression PJ : {details}",
-    "attachmentsReadError": "❌ Erreur récupération PJ : {details}",
-    "bodyReadErrorReplies": "❌ Erreur de lecture du mail",
-    "repliesNone": "ℹ️ Aucun reply détecté dans le mail",
-    "repliesNoChange": "ℹ️ {count} reply(s) trouvé(s), moins de 3 donc aucun changement",
-    "repliesCleaned": "✅ Replies nettoyés ({count} trouvés, 2 conservés)!",
-    "repliesCleanError": "❌ Erreur lors du nettoyage des replies : {details}",
-    "cleanAllDone": "✅ Mail complètement nettoyé!",
-    "unknown": "inconnue",
-    "genericError": "❌ Erreur : {details}"
   },
   "units": {
     "kilobytes": "Ko",
     "megabytes": "Mo",
     "gigabytes": "Go",
     "lessThanOne": "< 1 Ko"
+  },
+  "taskpane": {
+    "hint": "Sélectionnez du texte dans l'email, puis cliquez sur une action ci-dessous.",
+    "reply": "Réponse partielle",
+    "replyAll": "Répondre à tous partiel",
+    "forward": "Transfert partiel"
   }
 }

@@ -35,7 +35,6 @@
       "cannotRemoveAttachments": "❌ Unable to remove attachments",
       "cannotKeepReplies": "❌ Unable to keep 2 replies",
       "cannotCleanAll": "❌ Unable to run full cleanup",
-      "actionPerformed": "Action completed.",
       "partialReplyOpened": "✅ Partial reply draft opened.",
       "partialReplyAllOpened": "✅ Partial reply-all draft opened.",
       "partialForwardOpened": "✅ Partial forward draft opened.",
@@ -44,49 +43,19 @@
       "cannotPartialReply": "❌ Unable to create partial reply.",
       "cannotPartialReplyAll": "❌ Unable to create partial reply-all.",
       "cannotPartialForward": "❌ Unable to create partial forward.",
-      "forwardPrefix": "FW:",
-      "forwardLabelFrom": "From:",
-      "forwardLabelSent": "Sent:",
-      "forwardLabelSubject": "Subject:",
-      "unknownValue": "unknown"
+      "forwardPrefix": "FW:"
     }
-  },
-  "taskpane": {
-    "title": "MailLighter Add-in",
-    "welcome": "Welcome",
-    "cleanupTitle": "Email cleanup",
-    "removeImagesButton": "🖼️ Remove images",
-    "keepRepliesButton": "💬 Keep latest 2 replies",
-    "removeAttachmentsButton": "📎 Remove attachments",
-    "cleanAllButton": "🧹 Remove everything",
-    "confirmCleanAll": "Are you sure you want to remove everything?",
-    "yes": "Yes",
-    "no": "No",
-    "cleaningInProgress": "Cleaning in progress...",
-    "actionCancelled": "Action canceled.",
-    "bodyEditUnavailable": "❌ Body update is not available in read mode",
-    "bodyReadError": "❌ Unable to read email body",
-    "imagesRemoved": "✅ {count} image(s) removed!",
-    "imagesRemovedWithSize": "✅ {count} image(s) removed! ({size} saved)",
-    "imagesRemoveError": "❌ Unable to remove images: {details}",
-    "attachmentsNone": "ℹ️ No attachments to remove",
-    "attachmentsRemoved": "✅ {count} attachment(s) removed!",
-    "attachmentsRemovedWithSize": "✅ {count} attachment(s) removed! ({size} saved)",
-    "attachmentRemoveError": "❌ Unable to remove attachment: {details}",
-    "attachmentsReadError": "❌ Unable to read attachments: {details}",
-    "bodyReadErrorReplies": "❌ Unable to read email body",
-    "repliesNone": "ℹ️ No reply detected in this email",
-    "repliesNoChange": "ℹ️ {count} reply(ies) detected, no cleanup needed",
-    "repliesCleaned": "✅ Replies cleaned ({count} detected, latest 2 kept)!",
-    "repliesCleanError": "❌ Unable to clean replies: {details}",
-    "cleanAllDone": "✅ Email fully cleaned!",
-    "unknown": "unknown",
-    "genericError": "❌ Error: {details}"
   },
   "units": {
     "kilobytes": "KB",
     "megabytes": "MB",
     "gigabytes": "GB",
     "lessThanOne": "< 1 KB"
+  },
+  "taskpane": {
+    "hint": "Select text in the email, then click an action below.",
+    "reply": "Partial reply",
+    "replyAll": "Partial reply all",
+    "forward": "Partial forward"
   }
 }

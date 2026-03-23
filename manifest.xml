@@ -9,7 +9,7 @@
     <Override Locale="es-es" Value="MailLighter"/>
   </DisplayName>
   <Description DefaultValue="The best way to clean your emails.">
-    <Override Locale="fr-fr" Value="La meilleure façon de nettoyer vos emails."/>
+    <Override Locale="fr-fr" Value="La meilleure fa&#231;on de nettoyer vos emails."/>
     <Override Locale="es-es" Value="La mejor manera de limpiar tus correos."/>
   </Description>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
@@ -45,6 +45,8 @@
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
   </Rule>
   <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <!-- VersionOverrides V1_0: fallback for older clients (no pinning, no shortcuts) -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
     <Requirements>
       <bt:Sets DefaultMinVersion="1.3">
@@ -57,9 +59,9 @@
           <FunctionFile resid="Commands.Url"/>
           <ExtensionPoint xsi:type="MessageReadCommandSurface">
             <OfficeTab id="TabDefault">
-              <Group id="msgReadPartialGroup">
+              <Group id="msgReadGroup">
                 <Label resid="GroupLabel"/>
-                <Control xsi:type="Menu" id="msgReadPartialMenuButton">
+                <Control xsi:type="Menu" id="msgReadMenuButton">
                   <Label resid="MenuButton.Label"/>
                   <Supertip>
                     <Title resid="MenuButton.Label"/>
@@ -71,46 +73,46 @@
                     <bt:Image size="80" resid="Icon.80x80"/>
                   </Icon>
                   <Items>
-                    <Item id="msgReadPartialReplyItem">
+                    <Item id="msgReadPartialReply">
                       <Label resid="PartialReply.Label"/>
                       <Supertip>
                         <Title resid="PartialReply.Label"/>
                         <Description resid="PartialReply.Tooltip"/>
                       </Supertip>
                       <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
+                        <bt:Image size="16" resid="Reply.16x16"/>
+                        <bt:Image size="32" resid="Reply.32x32"/>
+                        <bt:Image size="80" resid="Reply.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>partialReplyCommand</FunctionName>
                       </Action>
                     </Item>
-                    <Item id="msgReadPartialReplyAllItem">
+                    <Item id="msgReadPartialReplyAll">
                       <Label resid="PartialReplyAll.Label"/>
                       <Supertip>
                         <Title resid="PartialReplyAll.Label"/>
                         <Description resid="PartialReplyAll.Tooltip"/>
                       </Supertip>
                       <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
+                        <bt:Image size="16" resid="ReplyAll.16x16"/>
+                        <bt:Image size="32" resid="ReplyAll.32x32"/>
+                        <bt:Image size="80" resid="ReplyAll.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>partialReplyAllCommand</FunctionName>
                       </Action>
                     </Item>
-                    <Item id="msgReadPartialForwardItem">
+                    <Item id="msgReadPartialForward">
                       <Label resid="PartialForward.Label"/>
                       <Supertip>
                         <Title resid="PartialForward.Label"/>
                         <Description resid="PartialForward.Tooltip"/>
                       </Supertip>
                       <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
+                        <bt:Image size="16" resid="Forward.16x16"/>
+                        <bt:Image size="32" resid="Forward.32x32"/>
+                        <bt:Image size="80" resid="Forward.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>partialForwardCommand</FunctionName>
@@ -125,79 +127,65 @@
             <OfficeTab id="TabDefault">
               <Group id="msgComposeGroup">
                 <Label resid="GroupLabel"/>
-                <Control xsi:type="Menu" id="msgComposeMenuButton">
-                  <Label resid="MenuButton.Label"/>
+                <Control xsi:type="Button" id="msgComposeRemoveImagesBtn">
+                  <Label resid="RemoveImages.Label"/>
                   <Supertip>
-                    <Title resid="MenuButton.Label"/>
-                    <Description resid="MenuButton.Tooltip"/>
+                    <Title resid="RemoveImages.Label"/>
+                    <Description resid="RemoveImages.Tooltip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Icon.16x16"/>
-                    <bt:Image size="32" resid="Icon.32x32"/>
-                    <bt:Image size="80" resid="Icon.80x80"/>
+                    <bt:Image size="16" resid="RemoveImages.16x16"/>
+                    <bt:Image size="32" resid="RemoveImages.32x32"/>
+                    <bt:Image size="80" resid="RemoveImages.80x80"/>
                   </Icon>
-                  <Items>
-                    <Item id="msgComposeRemoveImagesItem">
-                      <Label resid="RemoveImages.Label"/>
-                      <Supertip>
-                        <Title resid="RemoveImages.Label"/>
-                        <Description resid="RemoveImages.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>removeImagesCommand</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgComposeRemoveAttachmentsItem">
-                      <Label resid="RemoveAttachments.Label"/>
-                      <Supertip>
-                        <Title resid="RemoveAttachments.Label"/>
-                        <Description resid="RemoveAttachments.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>removeAttachmentsCommand</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgComposeKeepTwoRepliesItem">
-                      <Label resid="KeepTwoReplies.Label"/>
-                      <Supertip>
-                        <Title resid="KeepTwoReplies.Label"/>
-                        <Description resid="KeepTwoReplies.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>keepTwoRepliesCommand</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgComposeCleanAllItem">
-                      <Label resid="CleanAll.Label"/>
-                      <Supertip>
-                        <Title resid="CleanAll.Label"/>
-                        <Description resid="CleanAll.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>cleanAllCommand</FunctionName>
-                      </Action>
-                    </Item>
-                  </Items>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>removeImagesCommand</FunctionName>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="msgComposeRemoveAttachmentsBtn">
+                  <Label resid="RemoveAttachments.Label"/>
+                  <Supertip>
+                    <Title resid="RemoveAttachments.Label"/>
+                    <Description resid="RemoveAttachments.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="RemoveAttachments.16x16"/>
+                    <bt:Image size="32" resid="RemoveAttachments.32x32"/>
+                    <bt:Image size="80" resid="RemoveAttachments.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>removeAttachmentsCommand</FunctionName>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="msgComposeKeepTwoRepliesBtn">
+                  <Label resid="KeepTwoReplies.Label"/>
+                  <Supertip>
+                    <Title resid="KeepTwoReplies.Label"/>
+                    <Description resid="KeepTwoReplies.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="KeepReplies.16x16"/>
+                    <bt:Image size="32" resid="KeepReplies.32x32"/>
+                    <bt:Image size="80" resid="KeepReplies.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>keepTwoRepliesCommand</FunctionName>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="msgComposeCleanAllBtn">
+                  <Label resid="CleanAll.Label"/>
+                  <Supertip>
+                    <Title resid="CleanAll.Label"/>
+                    <Description resid="CleanAll.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="CleanAll.16x16"/>
+                    <bt:Image size="32" resid="CleanAll.32x32"/>
+                    <bt:Image size="80" resid="CleanAll.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>cleanAllCommand</FunctionName>
+                  </Action>
                 </Control>
               </Group>
             </OfficeTab>
@@ -210,6 +198,27 @@
         <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
         <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
         <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="RemoveImages.16x16" DefaultValue="https://localhost:3000/assets/icon-remove-images-16.png"/>
+        <bt:Image id="RemoveImages.32x32" DefaultValue="https://localhost:3000/assets/icon-remove-images-32.png"/>
+        <bt:Image id="RemoveImages.80x80" DefaultValue="https://localhost:3000/assets/icon-remove-images-80.png"/>
+        <bt:Image id="RemoveAttachments.16x16" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-16.png"/>
+        <bt:Image id="RemoveAttachments.32x32" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-32.png"/>
+        <bt:Image id="RemoveAttachments.80x80" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-80.png"/>
+        <bt:Image id="KeepReplies.16x16" DefaultValue="https://localhost:3000/assets/icon-keep-replies-16.png"/>
+        <bt:Image id="KeepReplies.32x32" DefaultValue="https://localhost:3000/assets/icon-keep-replies-32.png"/>
+        <bt:Image id="KeepReplies.80x80" DefaultValue="https://localhost:3000/assets/icon-keep-replies-80.png"/>
+        <bt:Image id="CleanAll.16x16" DefaultValue="https://localhost:3000/assets/icon-clean-all-16.png"/>
+        <bt:Image id="CleanAll.32x32" DefaultValue="https://localhost:3000/assets/icon-clean-all-32.png"/>
+        <bt:Image id="CleanAll.80x80" DefaultValue="https://localhost:3000/assets/icon-clean-all-80.png"/>
+        <bt:Image id="Reply.16x16" DefaultValue="https://localhost:3000/assets/icon-reply-16.png"/>
+        <bt:Image id="Reply.32x32" DefaultValue="https://localhost:3000/assets/icon-reply-32.png"/>
+        <bt:Image id="Reply.80x80" DefaultValue="https://localhost:3000/assets/icon-reply-80.png"/>
+        <bt:Image id="ReplyAll.16x16" DefaultValue="https://localhost:3000/assets/icon-reply-all-16.png"/>
+        <bt:Image id="ReplyAll.32x32" DefaultValue="https://localhost:3000/assets/icon-reply-all-32.png"/>
+        <bt:Image id="ReplyAll.80x80" DefaultValue="https://localhost:3000/assets/icon-reply-all-80.png"/>
+        <bt:Image id="Forward.16x16" DefaultValue="https://localhost:3000/assets/icon-forward-16.png"/>
+        <bt:Image id="Forward.32x32" DefaultValue="https://localhost:3000/assets/icon-forward-32.png"/>
+        <bt:Image id="Forward.80x80" DefaultValue="https://localhost:3000/assets/icon-forward-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
@@ -219,21 +228,21 @@
           <bt:Override Locale="fr-fr" Value="MailLighter Add-in"/>
           <bt:Override Locale="es-es" Value="Complemento MailLighter"/>
         </bt:String>
-        <bt:String id="MenuButton.Label" DefaultValue="MailLighter">
-          <bt:Override Locale="fr-fr" Value="MailLighter"/>
-          <bt:Override Locale="es-es" Value="MailLighter"/>
+        <bt:String id="MenuButton.Label" DefaultValue="Quick Actions">
+          <bt:Override Locale="fr-fr" Value="Actions directes"/>
+          <bt:Override Locale="es-es" Value="Acciones directas"/>
         </bt:String>
         <bt:String id="RemoveImages.Label" DefaultValue="Remove images">
           <bt:Override Locale="fr-fr" Value="Supprimer les images"/>
-          <bt:Override Locale="es-es" Value="Eliminar imágenes"/>
+          <bt:Override Locale="es-es" Value="Eliminar im&#225;genes"/>
         </bt:String>
         <bt:String id="RemoveAttachments.Label" DefaultValue="Remove attachments">
-          <bt:Override Locale="fr-fr" Value="Supprimer les pièces jointes"/>
+          <bt:Override Locale="fr-fr" Value="Supprimer les pi&#232;ces jointes"/>
           <bt:Override Locale="es-es" Value="Eliminar adjuntos"/>
         </bt:String>
         <bt:String id="KeepTwoReplies.Label" DefaultValue="Keep latest 2 replies">
-          <bt:Override Locale="fr-fr" Value="Conserver 2 réponses"/>
-          <bt:Override Locale="es-es" Value="Conservar las últimas 2 respuestas"/>
+          <bt:Override Locale="fr-fr" Value="Conserver 2 r&#233;ponses"/>
+          <bt:Override Locale="es-es" Value="Conservar las &#250;ltimas 2 respuestas"/>
         </bt:String>
         <bt:String id="CleanAll.Label" DefaultValue="Full cleanup">
           <bt:Override Locale="fr-fr" Value="Nettoyage complet"/>
@@ -249,25 +258,25 @@
         </bt:String>
         <bt:String id="PartialForward.Label" DefaultValue="Partial forward">
           <bt:Override Locale="fr-fr" Value="Transfert partiel"/>
-          <bt:Override Locale="es-es" Value="Reenvío parcial"/>
+          <bt:Override Locale="es-es" Value="Reenv&#237;o parcial"/>
         </bt:String>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="MenuButton.Tooltip" DefaultValue="Open MailLighter actions menu.">
-          <bt:Override Locale="fr-fr" Value="Ouvre le menu d’actions MailLighter."/>
-          <bt:Override Locale="es-es" Value="Abre el menú de acciones de MailLighter."/>
+        <bt:String id="MenuButton.Tooltip" DefaultValue="Open the quick actions menu.">
+          <bt:Override Locale="fr-fr" Value="Ouvre le menu des actions directes."/>
+          <bt:Override Locale="es-es" Value="Abre el men&#250; de acciones directas."/>
         </bt:String>
         <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current email.">
           <bt:Override Locale="fr-fr" Value="Supprime les images du mail courant."/>
-          <bt:Override Locale="es-es" Value="Elimina las imágenes del correo actual."/>
+          <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del correo actual."/>
         </bt:String>
         <bt:String id="RemoveAttachments.Tooltip" DefaultValue="Remove attachments from the current draft.">
-          <bt:Override Locale="fr-fr" Value="Supprime les pièces jointes du brouillon courant."/>
+          <bt:Override Locale="fr-fr" Value="Supprime les pi&#232;ces jointes du brouillon courant."/>
           <bt:Override Locale="es-es" Value="Elimina los adjuntos del borrador actual."/>
         </bt:String>
         <bt:String id="KeepTwoReplies.Tooltip" DefaultValue="Keep only the latest 2 replies.">
           <bt:Override Locale="fr-fr" Value="Conserve uniquement les deux derniers replies."/>
-          <bt:Override Locale="es-es" Value="Conserva solo las 2 respuestas más recientes."/>
+          <bt:Override Locale="es-es" Value="Conserva solo las 2 respuestas m&#225;s recientes."/>
         </bt:String>
         <bt:String id="CleanAll.Tooltip" DefaultValue="Run all cleanup actions.">
           <bt:Override Locale="fr-fr" Value="Applique toutes les actions de nettoyage."/>
@@ -283,9 +292,286 @@
         </bt:String>
         <bt:String id="PartialForward.Tooltip" DefaultValue="Create a forward draft that keeps only your selected content.">
           <bt:Override Locale="fr-fr" Value="Cree un brouillon de transfert qui ne conserve que votre selection."/>
-          <bt:Override Locale="es-es" Value="Crea un borrador de reenvío que conserva solo el contenido seleccionado."/>
+          <bt:Override Locale="es-es" Value="Crea un borrador de reenv&#237;o que conserva solo el contenido seleccionado."/>
         </bt:String>
       </bt:LongStrings>
     </Resources>
+
+    <!-- VersionOverrides V1_1: pinnable taskpane -->
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.5">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <DesktopFormFactor>
+            <FunctionFile resid="Commands.Url"/>
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="msgReadPartialGroup">
+                  <Label resid="GroupLabel"/>
+                  <Control xsi:type="Button" id="msgReadTaskpaneButton">
+                    <Label resid="Taskpane.Label"/>
+                    <Supertip>
+                      <Title resid="Taskpane.Label"/>
+                      <Description resid="Taskpane.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="Taskpane.Url"/>
+                      <SupportsPinning>true</SupportsPinning>
+                    </Action>
+                  </Control>
+                  <Control xsi:type="Menu" id="msgReadPartialMenuButton">
+                    <Label resid="MenuButton.Label"/>
+                    <Supertip>
+                      <Title resid="MenuButton.Label"/>
+                      <Description resid="MenuButton.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Items>
+                      <Item id="msgReadPartialReplyItem">
+                        <Label resid="PartialReply.Label"/>
+                        <Supertip>
+                          <Title resid="PartialReply.Label"/>
+                          <Description resid="PartialReply.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="Reply.16x16"/>
+                          <bt:Image size="32" resid="Reply.32x32"/>
+                          <bt:Image size="80" resid="Reply.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>partialReplyCommand</FunctionName>
+                        </Action>
+                      </Item>
+                      <Item id="msgReadPartialReplyAllItem">
+                        <Label resid="PartialReplyAll.Label"/>
+                        <Supertip>
+                          <Title resid="PartialReplyAll.Label"/>
+                          <Description resid="PartialReplyAll.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="ReplyAll.16x16"/>
+                          <bt:Image size="32" resid="ReplyAll.32x32"/>
+                          <bt:Image size="80" resid="ReplyAll.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>partialReplyAllCommand</FunctionName>
+                        </Action>
+                      </Item>
+                      <Item id="msgReadPartialForwardItem">
+                        <Label resid="PartialForward.Label"/>
+                        <Supertip>
+                          <Title resid="PartialForward.Label"/>
+                          <Description resid="PartialForward.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="Forward.16x16"/>
+                          <bt:Image size="32" resid="Forward.32x32"/>
+                          <bt:Image size="80" resid="Forward.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>partialForwardCommand</FunctionName>
+                        </Action>
+                      </Item>
+                    </Items>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+            <ExtensionPoint xsi:type="MessageComposeCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="msgComposeGroup">
+                  <Label resid="GroupLabel"/>
+                  <Control xsi:type="Button" id="msgComposeRemoveImagesBtn">
+                    <Label resid="RemoveImages.Label"/>
+                    <Supertip>
+                      <Title resid="RemoveImages.Label"/>
+                      <Description resid="RemoveImages.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="RemoveImages.16x16"/>
+                      <bt:Image size="32" resid="RemoveImages.32x32"/>
+                      <bt:Image size="80" resid="RemoveImages.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>removeImagesCommand</FunctionName>
+                    </Action>
+                  </Control>
+                  <Control xsi:type="Button" id="msgComposeRemoveAttachmentsBtn">
+                    <Label resid="RemoveAttachments.Label"/>
+                    <Supertip>
+                      <Title resid="RemoveAttachments.Label"/>
+                      <Description resid="RemoveAttachments.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="RemoveAttachments.16x16"/>
+                      <bt:Image size="32" resid="RemoveAttachments.32x32"/>
+                      <bt:Image size="80" resid="RemoveAttachments.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>removeAttachmentsCommand</FunctionName>
+                    </Action>
+                  </Control>
+                  <Control xsi:type="Button" id="msgComposeKeepTwoRepliesBtn">
+                    <Label resid="KeepTwoReplies.Label"/>
+                    <Supertip>
+                      <Title resid="KeepTwoReplies.Label"/>
+                      <Description resid="KeepTwoReplies.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="KeepReplies.16x16"/>
+                      <bt:Image size="32" resid="KeepReplies.32x32"/>
+                      <bt:Image size="80" resid="KeepReplies.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>keepTwoRepliesCommand</FunctionName>
+                    </Action>
+                  </Control>
+                  <Control xsi:type="Button" id="msgComposeCleanAllBtn">
+                    <Label resid="CleanAll.Label"/>
+                    <Supertip>
+                      <Title resid="CleanAll.Label"/>
+                      <Description resid="CleanAll.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="CleanAll.16x16"/>
+                      <bt:Image size="32" resid="CleanAll.32x32"/>
+                      <bt:Image size="80" resid="CleanAll.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>cleanAllCommand</FunctionName>
+                    </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+          </DesktopFormFactor>
+        </Host>
+      </Hosts>
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+          <bt:Image id="RemoveImages.16x16" DefaultValue="https://localhost:3000/assets/icon-remove-images-16.png"/>
+          <bt:Image id="RemoveImages.32x32" DefaultValue="https://localhost:3000/assets/icon-remove-images-32.png"/>
+          <bt:Image id="RemoveImages.80x80" DefaultValue="https://localhost:3000/assets/icon-remove-images-80.png"/>
+          <bt:Image id="RemoveAttachments.16x16" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-16.png"/>
+          <bt:Image id="RemoveAttachments.32x32" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-32.png"/>
+          <bt:Image id="RemoveAttachments.80x80" DefaultValue="https://localhost:3000/assets/icon-remove-attachments-80.png"/>
+          <bt:Image id="KeepReplies.16x16" DefaultValue="https://localhost:3000/assets/icon-keep-replies-16.png"/>
+          <bt:Image id="KeepReplies.32x32" DefaultValue="https://localhost:3000/assets/icon-keep-replies-32.png"/>
+          <bt:Image id="KeepReplies.80x80" DefaultValue="https://localhost:3000/assets/icon-keep-replies-80.png"/>
+          <bt:Image id="CleanAll.16x16" DefaultValue="https://localhost:3000/assets/icon-clean-all-16.png"/>
+          <bt:Image id="CleanAll.32x32" DefaultValue="https://localhost:3000/assets/icon-clean-all-32.png"/>
+          <bt:Image id="CleanAll.80x80" DefaultValue="https://localhost:3000/assets/icon-clean-all-80.png"/>
+          <bt:Image id="Reply.16x16" DefaultValue="https://localhost:3000/assets/icon-reply-16.png"/>
+          <bt:Image id="Reply.32x32" DefaultValue="https://localhost:3000/assets/icon-reply-32.png"/>
+          <bt:Image id="Reply.80x80" DefaultValue="https://localhost:3000/assets/icon-reply-80.png"/>
+          <bt:Image id="ReplyAll.16x16" DefaultValue="https://localhost:3000/assets/icon-reply-all-16.png"/>
+          <bt:Image id="ReplyAll.32x32" DefaultValue="https://localhost:3000/assets/icon-reply-all-32.png"/>
+          <bt:Image id="ReplyAll.80x80" DefaultValue="https://localhost:3000/assets/icon-reply-all-80.png"/>
+          <bt:Image id="Forward.16x16" DefaultValue="https://localhost:3000/assets/icon-forward-16.png"/>
+          <bt:Image id="Forward.32x32" DefaultValue="https://localhost:3000/assets/icon-forward-32.png"/>
+          <bt:Image id="Forward.80x80" DefaultValue="https://localhost:3000/assets/icon-forward-80.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
+          <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="GroupLabel" DefaultValue="MailLighter Add-in">
+            <bt:Override Locale="fr-fr" Value="MailLighter Add-in"/>
+            <bt:Override Locale="es-es" Value="Complemento MailLighter"/>
+          </bt:String>
+          <bt:String id="MenuButton.Label" DefaultValue="Quick Actions">
+            <bt:Override Locale="fr-fr" Value="Actions directes"/>
+            <bt:Override Locale="es-es" Value="Acciones directas"/>
+          </bt:String>
+          <bt:String id="Taskpane.Label" DefaultValue="Action Panel">
+            <bt:Override Locale="fr-fr" Value="Panneau d'actions"/>
+            <bt:Override Locale="es-es" Value="Panel de acciones"/>
+          </bt:String>
+          <bt:String id="RemoveImages.Label" DefaultValue="Remove images">
+            <bt:Override Locale="fr-fr" Value="Supprimer les images"/>
+            <bt:Override Locale="es-es" Value="Eliminar im&#225;genes"/>
+          </bt:String>
+          <bt:String id="RemoveAttachments.Label" DefaultValue="Remove attachments">
+            <bt:Override Locale="fr-fr" Value="Supprimer les pi&#232;ces jointes"/>
+            <bt:Override Locale="es-es" Value="Eliminar adjuntos"/>
+          </bt:String>
+          <bt:String id="KeepTwoReplies.Label" DefaultValue="Keep latest 2 replies">
+            <bt:Override Locale="fr-fr" Value="Conserver 2 r&#233;ponses"/>
+            <bt:Override Locale="es-es" Value="Conservar las &#250;ltimas 2 respuestas"/>
+          </bt:String>
+          <bt:String id="CleanAll.Label" DefaultValue="Full cleanup">
+            <bt:Override Locale="fr-fr" Value="Nettoyage complet"/>
+            <bt:Override Locale="es-es" Value="Limpieza completa"/>
+          </bt:String>
+          <bt:String id="PartialReply.Label" DefaultValue="Partial reply">
+            <bt:Override Locale="fr-fr" Value="Reponse partielle"/>
+            <bt:Override Locale="es-es" Value="Respuesta parcial"/>
+          </bt:String>
+          <bt:String id="PartialReplyAll.Label" DefaultValue="Partial reply all">
+            <bt:Override Locale="fr-fr" Value="Repondre a tous partiel"/>
+            <bt:Override Locale="es-es" Value="Responder a todos parcial"/>
+          </bt:String>
+          <bt:String id="PartialForward.Label" DefaultValue="Partial forward">
+            <bt:Override Locale="fr-fr" Value="Transfert partiel"/>
+            <bt:Override Locale="es-es" Value="Reenv&#237;o parcial"/>
+          </bt:String>
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="MenuButton.Tooltip" DefaultValue="Open the quick actions menu.">
+            <bt:Override Locale="fr-fr" Value="Ouvre le menu des actions directes."/>
+            <bt:Override Locale="es-es" Value="Abre el men&#250; de acciones directas."/>
+          </bt:String>
+          <bt:String id="Taskpane.Tooltip" DefaultValue="Open the action panel &#8212; select text then click an action.">
+            <bt:Override Locale="fr-fr" Value="Ouvre le panneau d'actions &#8212; s&#233;lectionnez du texte puis cliquez sur une action."/>
+            <bt:Override Locale="es-es" Value="Abre el panel de acciones &#8212; selecciona texto y haz clic en una acci&#243;n."/>
+          </bt:String>
+          <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current email.">
+            <bt:Override Locale="fr-fr" Value="Supprime les images du mail courant."/>
+            <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del correo actual."/>
+          </bt:String>
+          <bt:String id="RemoveAttachments.Tooltip" DefaultValue="Remove attachments from the current draft.">
+            <bt:Override Locale="fr-fr" Value="Supprime les pi&#232;ces jointes du brouillon courant."/>
+            <bt:Override Locale="es-es" Value="Elimina los adjuntos del borrador actual."/>
+          </bt:String>
+          <bt:String id="KeepTwoReplies.Tooltip" DefaultValue="Keep only the latest 2 replies.">
+            <bt:Override Locale="fr-fr" Value="Conserve uniquement les deux derniers replies."/>
+            <bt:Override Locale="es-es" Value="Conserva solo las 2 respuestas m&#225;s recientes."/>
+          </bt:String>
+          <bt:String id="CleanAll.Tooltip" DefaultValue="Run all cleanup actions.">
+            <bt:Override Locale="fr-fr" Value="Applique toutes les actions de nettoyage."/>
+            <bt:Override Locale="es-es" Value="Ejecuta todas las acciones de limpieza."/>
+          </bt:String>
+          <bt:String id="PartialReply.Tooltip" DefaultValue="Create a reply draft that keeps only your selected content.">
+            <bt:Override Locale="fr-fr" Value="Cree un brouillon de reponse qui ne conserve que votre selection."/>
+            <bt:Override Locale="es-es" Value="Crea un borrador de respuesta que conserva solo el contenido seleccionado."/>
+          </bt:String>
+          <bt:String id="PartialReplyAll.Tooltip" DefaultValue="Create a reply-all draft that keeps only your selected content.">
+            <bt:Override Locale="fr-fr" Value="Cree un brouillon de repondre a tous qui ne conserve que votre selection."/>
+            <bt:Override Locale="es-es" Value="Crea un borrador de respuesta a todos que conserva solo el contenido seleccionado."/>
+          </bt:String>
+          <bt:String id="PartialForward.Tooltip" DefaultValue="Create a forward draft that keeps only your selected content.">
+            <bt:Override Locale="fr-fr" Value="Cree un brouillon de transfert qui ne conserve que votre selection."/>
+            <bt:Override Locale="es-es" Value="Crea un borrador de reenv&#237;o que conserva solo el contenido seleccionado."/>
+          </bt:String>
+        </bt:LongStrings>
+      </Resources>
+    </VersionOverrides>
   </VersionOverrides>
 </OfficeApp>

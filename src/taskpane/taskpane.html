@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MailLighter</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13px;
+            color: #333;
+            background: #fafafa;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .header .logo {
+            width: 180px;
+            height: auto;
+            display: block;
+        }
+        .hint {
+            color: #666;
+            margin-bottom: 16px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-left: 3px solid #1564C0;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            color: #333;
+            transition: background 0.12s ease, border-color 0.12s ease;
+            text-align: left;
+        }
+        .action-btn:hover {
+            background: #f0f6ff;
+            border-color: #1564C0;
+        }
+        .action-btn:active {
+            background: #dce9f9;
+        }
+        .action-btn.green {
+            border-left-color: #4AA251;
+        }
+        .action-btn.green:hover {
+            background: #f0f9f1;
+            border-color: #4AA251;
+        }
+        .action-btn.green:active {
+            background: #d8f0da;
+        }
+        .action-btn .label {
+            flex: 1;
+            font-weight: 500;
+        }
+        .action-btn .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex: 0 0 20px;
+            object-fit: contain;
+        }
+        .action-btn .shortcut {
+            font-size: 10px;
+            color: #aaa;
+            font-family: "Consolas", "Courier New", monospace;
+        }
+        .status {
+            margin-top: 16px;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            min-height: 20px;
+            line-height: 1.4;
+        }
+        .status.success { background: #e8f5e9; color: #2e7d32; }
+        .status.error   { background: #ffeef0; color: #c62828; }
+        .status.info    { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img class="logo" src="../../assets/MailLighter_Logo_transp.png" alt="MailLighter" />
+    </div>
+    <p class="hint" id="hint"></p>
+    <div class="actions">
+        <button class="action-btn" id="btnReply">
+            <img class="icon" src="../../assets/icon-reply-32.png" alt="" />
+            <span class="label" id="lblReply"></span>
+        </button>
+        <button class="action-btn" id="btnReplyAll">
+            <img class="icon" src="../../assets/icon-reply-all-32.png" alt="" />
+            <span class="label" id="lblReplyAll"></span>
+        </button>
+        <button class="action-btn green" id="btnForward">
+            <img class="icon" src="../../assets/icon-forward-32.png" alt="" />
+            <span class="label" id="lblForward"></span>
+        </button>
+    </div>
+    <div class="status" id="status"></div>
+</body>
+
+</html>

@@ -35,7 +35,6 @@
       "cannotRemoveAttachments": "❌ No se pudieron eliminar los adjuntos",
       "cannotKeepReplies": "❌ No se pudieron conservar 2 respuestas",
       "cannotCleanAll": "❌ No se pudo ejecutar la limpieza completa",
-      "actionPerformed": "Acción completada.",
       "partialReplyOpened": "✅ Borrador de respuesta parcial abierto.",
       "partialReplyAllOpened": "✅ Borrador de respuesta a todos parcial abierto.",
       "partialForwardOpened": "✅ Borrador de reenvío parcial abierto.",
@@ -44,49 +43,19 @@
       "cannotPartialReply": "❌ No se pudo crear la respuesta parcial.",
       "cannotPartialReplyAll": "❌ No se pudo crear la respuesta a todos parcial.",
       "cannotPartialForward": "❌ No se pudo crear el reenvío parcial.",
-      "forwardPrefix": "RV:",
-      "forwardLabelFrom": "De:",
-      "forwardLabelSent": "Enviado:",
-      "forwardLabelSubject": "Asunto:",
-      "unknownValue": "desconocido"
+      "forwardPrefix": "RV:"
     }
-  },
-  "taskpane": {
-    "title": "Complemento MailLighter",
-    "welcome": "Bienvenido",
-    "cleanupTitle": "Limpieza de correo",
-    "removeImagesButton": "🖼️ Eliminar imágenes",
-    "keepRepliesButton": "💬 Conservar las últimas 2 respuestas",
-    "removeAttachmentsButton": "📎 Eliminar adjuntos",
-    "cleanAllButton": "🧹 Eliminar todo",
-    "confirmCleanAll": "¿Seguro que quieres eliminar todo?",
-    "yes": "Sí",
-    "no": "No",
-    "cleaningInProgress": "Limpieza en progreso...",
-    "actionCancelled": "Acción cancelada.",
-    "bodyEditUnavailable": "❌ La actualización del cuerpo no está disponible en modo lectura",
-    "bodyReadError": "❌ No se puede leer el cuerpo del correo",
-    "imagesRemoved": "✅ {count} imagen(es) eliminada(s)!",
-    "imagesRemovedWithSize": "✅ {count} imagen(es) eliminada(s)! ({size} ahorrados)",
-    "imagesRemoveError": "❌ No se pudieron eliminar imágenes: {details}",
-    "attachmentsNone": "ℹ️ No hay adjuntos para eliminar",
-    "attachmentsRemoved": "✅ {count} adjunto(s) eliminado(s)!",
-    "attachmentsRemovedWithSize": "✅ {count} adjunto(s) eliminado(s)! ({size} ahorrados)",
-    "attachmentRemoveError": "❌ No se pudo eliminar el adjunto: {details}",
-    "attachmentsReadError": "❌ No se pudieron leer los adjuntos: {details}",
-    "bodyReadErrorReplies": "❌ No se puede leer el cuerpo del correo",
-    "repliesNone": "ℹ️ No se detectó ninguna respuesta en este correo",
-    "repliesNoChange": "ℹ️ {count} respuesta(s) detectada(s), no se necesita limpieza",
-    "repliesCleaned": "✅ Respuestas limpiadas ({count} detectadas, se conservaron las últimas 2)!",
-    "repliesCleanError": "❌ No se pudieron limpiar respuestas: {details}",
-    "cleanAllDone": "✅ Correo limpiado por completo!",
-    "unknown": "desconocido",
-    "genericError": "❌ Error: {details}"
   },
   "units": {
     "kilobytes": "KB",
     "megabytes": "MB",
     "gigabytes": "GB",
     "lessThanOne": "< 1 KB"
+  },
+  "taskpane": {
+    "hint": "Selecciona texto en el correo, luego haz clic en una acción.",
+    "reply": "Respuesta parcial",
+    "replyAll": "Responder a todos parcial",
+    "forward": "Reenvío parcial"
   }
 }
