@@ -2,8 +2,6 @@
   <img src="assets/MailLighter_Logo_transp.png" alt="MailLighter" width="200">
 </p>
 
-<h1 align="center">MailLighter</h1>
-
 <p align="center">
   An Outlook add-in that provides quick actions to lighten your emails before sending them.
 </p>
