@@ -11,10 +11,7 @@
       "attachmentRemoveFailed": "Impossible de supprimer la pièce jointe.",
       "selectionUnavailable": "Le texte sélectionné n'est pas disponible dans ce contexte.",
       "selectionReadFailed": "Impossible de lire le texte sélectionné.",
-      "selectionEmpty": "Sélectionnez d'abord une partie du contenu de l'email.",
-      "replyFormUnavailable": "Le formulaire de réponse n'est pas disponible.",
-      "replyAllFormUnavailable": "Le formulaire de répondre à tous n'est pas disponible.",
-      "forwardFormUnavailable": "Le formulaire de transfert n'est pas disponible."
+      "selectionEmpty": "Sélectionnez d'abord une partie du contenu de l'email."
     },
     "notifications": {
       "genericError": "❌ Une erreur inattendue est survenue",
@@ -35,15 +32,8 @@
       "cannotRemoveAttachments": "❌ Impossible de supprimer les pièces jointes",
       "cannotKeepReplies": "❌ Impossible de conserver 2 réponses",
       "cannotCleanAll": "❌ Impossible d'exécuter le nettoyage complet",
-      "partialReplyOpened": "✅ Brouillon de réponse partielle ouvert.",
-      "partialReplyAllOpened": "✅ Brouillon de réponse à tous partielle ouvert.",
-      "partialForwardOpened": "✅ Brouillon de transfert partiel ouvert.",
-      "partialOpenedWithoutSelection": "ℹ️ La selection n'etait pas disponible, brouillon ouvert sans insertion partielle.",
-      "partialContentTrimmed": "ℹ️ Le contenu a ete raccourci pour respecter les limites de taille Outlook.",
-      "cannotPartialReply": "❌ Impossible de créer la réponse partielle.",
-      "cannotPartialReplyAll": "❌ Impossible de créer la réponse à tous partielle.",
-      "cannotPartialForward": "❌ Impossible de créer le transfert partiel.",
-      "forwardPrefix": "TR:"
+      "keepSelectionDone": "✅ Contenu remplacé par la sélection uniquement.",
+      "cannotKeepSelection": "❌ Impossible de ne garder que la sélection."
     }
   },
   "units": {
@@ -51,11 +41,5 @@
     "megabytes": "Mo",
     "gigabytes": "Go",
     "lessThanOne": "< 1 Ko"
-  },
-  "taskpane": {
-    "hint": "Sélectionnez du texte dans l'email, puis cliquez sur une action ci-dessous.",
-    "reply": "Réponse partielle",
-    "replyAll": "Répondre à tous partiel",
-    "forward": "Transfert partiel"
   }
 }

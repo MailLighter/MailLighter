@@ -11,10 +11,7 @@
       "attachmentRemoveFailed": "No se pudo eliminar el adjunto.",
       "selectionUnavailable": "El texto seleccionado no está disponible en este contexto.",
       "selectionReadFailed": "No se pudo leer el texto seleccionado.",
-      "selectionEmpty": "Selecciona primero una parte del cuerpo del correo.",
-      "replyFormUnavailable": "El formulario de respuesta no está disponible.",
-      "replyAllFormUnavailable": "El formulario de responder a todos no está disponible.",
-      "forwardFormUnavailable": "El formulario de reenvío no está disponible."
+      "selectionEmpty": "Selecciona primero una parte del cuerpo del correo."
     },
     "notifications": {
       "genericError": "❌ Ocurrió un error inesperado",
@@ -35,15 +32,8 @@
       "cannotRemoveAttachments": "❌ No se pudieron eliminar los adjuntos",
       "cannotKeepReplies": "❌ No se pudieron conservar 2 respuestas",
       "cannotCleanAll": "❌ No se pudo ejecutar la limpieza completa",
-      "partialReplyOpened": "✅ Borrador de respuesta parcial abierto.",
-      "partialReplyAllOpened": "✅ Borrador de respuesta a todos parcial abierto.",
-      "partialForwardOpened": "✅ Borrador de reenvío parcial abierto.",
-      "partialOpenedWithoutSelection": "ℹ️ La selección no estaba disponible, se abrió el borrador sin inserción parcial.",
-      "partialContentTrimmed": "ℹ️ El contenido se acortó para ajustarse a los límites de tamaño del borrador en Outlook.",
-      "cannotPartialReply": "❌ No se pudo crear la respuesta parcial.",
-      "cannotPartialReplyAll": "❌ No se pudo crear la respuesta a todos parcial.",
-      "cannotPartialForward": "❌ No se pudo crear el reenvío parcial.",
-      "forwardPrefix": "RV:"
+      "keepSelectionDone": "✅ Contenido reemplazado por la selección únicamente.",
+      "cannotKeepSelection": "❌ No se pudo conservar solo la selección."
     }
   },
   "units": {
@@ -51,11 +41,5 @@
     "megabytes": "MB",
     "gigabytes": "GB",
     "lessThanOne": "< 1 KB"
-  },
-  "taskpane": {
-    "hint": "Selecciona texto en el correo, luego haz clic en una acción.",
-    "reply": "Respuesta parcial",
-    "replyAll": "Responder a todos parcial",
-    "forward": "Reenvío parcial"
   }
 }
