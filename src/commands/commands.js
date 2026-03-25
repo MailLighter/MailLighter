@@ -6,12 +6,7 @@
 /* global Office */
 
 import { t } from "../shared/i18n";
-import {
-  sanitizeHtml,
-  toHtmlFromText,
-  displayFormWithFallback,
-  getForwardSubject,
-} from "../shared/office-helpers";
+import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -25,7 +20,6 @@ function notify(message, icon = "Icon.80x80") {
   }
 
   if (typeof item.notificationMessages.removeAsync === "function") {
-    // Remove legacy sample notification if it exists from older builds.
     item.notificationMessages.removeAsync("ActionPerformanceNotification");
   }
 
@@ -165,9 +159,6 @@ async function executeWithNotification(
   }
 }
 
-const MAX_REPLY_BODY_LENGTH = 30000;
-
-
 function getSelectedDataAsync(coercionType) {
   const item = Office.context.mailbox.item;
   return officeAsync(
@@ -189,10 +180,10 @@ async function getSelectedHtmlAsync() {
   }
 
   if (htmlSelection) {
-    const sanitizedSelection = sanitizeHtml(htmlSelection);
+    const cleaned = sanitizeSelectionHtml(htmlSelection);
 
-    if (sanitizedSelection.trim()) {
-      return sanitizedSelection;
+    if (cleaned.trim()) {
+      return cleaned;
     }
   }
 
@@ -211,161 +202,95 @@ async function getSelectedHtmlAsync() {
   throw new Error(t("commands.errors.selectionEmpty"));
 }
 
-
-function fitHtmlForReply(html) {
-  const normalized = String(html || "").trim();
-
-  if (normalized.length <= MAX_REPLY_BODY_LENGTH) {
-    return { html: normalized, trimmed: false };
-  }
-
-  const textCandidate = normalized
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const truncatedText = textCandidate.slice(0, MAX_REPLY_BODY_LENGTH / 2);
-
-  return {
-    html: toHtmlFromText(`${truncatedText}...`),
-    trimmed: true,
-  };
+function prependAsync(content, coercionType) {
+  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
+  return officeAsync(
+    body,
+    "prependAsync",
+    "commands.errors.bodyWriteUnavailable",
+    "commands.errors.bodyWriteFailed",
+    content,
+    { coercionType }
+  );
 }
 
-async function getPartialHtmlAsync() {
-  try {
-    const selectedHtml = await getSelectedHtmlAsync();
-    const fitted = fitHtmlForReply(selectedHtml);
+async function keepSelectionOnlyCore() {
+  // 1. Capture selection BEFORE reading the full body
+  const selectedHtml = await getSelectedHtmlAsync();
 
-    return {
-      html: fitted.html,
-      openedWithoutSelection: false,
-      wasTrimmed: fitted.trimmed,
-    };
+  // 2. Read the full body to find the structure
+  const fullBody = await getBodyAsync(Office.CoercionType.Html);
+
+  // 3. Find where the quoted/forwarded content starts.
+  //    We preserve the user's composing area (typing space, appendonsend, signature)
+  //    and replace everything after _MailOriginal with our separator + selection.
+  const mailOriginalMatch = fullBody.match(/<a[^>]*name\s*=\s*["']_MailOriginal["'][^>]*>/i);
+  const divRplyMatch = fullBody.match(/<div[^>]*\bid\s*=\s*["']divRplyFwdMsg["'][^>]*>/i);
+
+  // Pick the earliest marker
+  let cutPoint = -1;
+  if (mailOriginalMatch) cutPoint = mailOriginalMatch.index;
+  if (divRplyMatch && (cutPoint === -1 || divRplyMatch.index < cutPoint)) {
+    cutPoint = divRplyMatch.index;
+  }
+
+  const separator = '<hr style="border:none;border-top:1px solid #b5b5b5;margin:8px 0;">';
+
+  if (cutPoint > 0) {
+    const userArea = fullBody.substring(0, cutPoint);
+    const newBody = userArea + separator + selectedHtml;
+    await setBodyAsync(newBody, Office.CoercionType.Html);
+  } else {
+    const parts = ['<div><br></div>', separator, selectedHtml];
+    await setBodyAsync(parts.join(""), Office.CoercionType.Html);
+  }
+
+  // 4. Prepend an empty line to place the cursor at the very top.
+  //    Works in Old Outlook. In New Outlook the cursor stays at the bottom
+  //    (known Office.js API limitation).
+  try {
+    await prependAsync('<div><br></div>', Office.CoercionType.Html);
   } catch {
-    return {
-      html: "",
-      openedWithoutSelection: true,
-      wasTrimmed: false,
-    };
-  }
-}
-
-function buildPartialSuccessMessage(baseMessage, options) {
-  const notes = [];
-
-  if (options.openedWithoutSelection) {
-    notes.push(t("commands.notifications.partialOpenedWithoutSelection"));
+    // prependAsync not available in this client
   }
 
-  if (options.wasTrimmed) {
-    notes.push(t("commands.notifications.partialContentTrimmed"));
-  }
-
-  return notes.length > 0 ? `${baseMessage} ${notes.join(" ")}` : baseMessage;
+  return t("commands.notifications.keepSelectionDone");
 }
 
-
-function openReplyFormAsync(replyAll, htmlBody) {
-  const item = Office.context.mailbox.item;
-  const errorKey = replyAll
-    ? "commands.errors.replyAllFormUnavailable"
-    : "commands.errors.replyFormUnavailable";
-
-  if (!item) {
-    return Promise.reject(new Error(t(errorKey)));
-  }
-
-  const displayFn = replyAll ? item.displayReplyAllForm : item.displayReplyForm;
-
-  if (typeof displayFn !== "function") {
-    return Promise.reject(new Error(t(errorKey)));
-  }
-
-  try {
-    displayFormWithFallback(displayFn.bind(item), htmlBody);
-    return Promise.resolve();
-  } catch (error) {
-    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
-  }
-}
-
-
-function openForwardFormAsync(htmlBody) {
-  const mailbox = Office.context.mailbox;
-  const item = mailbox ? mailbox.item : null;
-
-  try {
-    if (item && typeof item.displayForwardForm === "function") {
-      displayFormWithFallback(item.displayForwardForm.bind(item), htmlBody);
-      return Promise.resolve();
-    }
-
-    if (!mailbox || typeof mailbox.displayNewMessageForm !== "function") {
-      return Promise.reject(new Error(t("commands.errors.forwardFormUnavailable")));
-    }
-
-    const formPayload = {
-      subject: getForwardSubject(item && item.subject ? item.subject : ""),
-    };
-
-    if (htmlBody) {
-      formPayload.htmlBody = htmlBody;
-    }
-
-    mailbox.displayNewMessageForm(formPayload);
-    return Promise.resolve();
-  } catch (error) {
-    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
-  }
-}
-
-async function partialReplyCore() {
-  const partial = await getPartialHtmlAsync();
-  await openReplyFormAsync(false, partial.html);
-  return buildPartialSuccessMessage(t("commands.notifications.partialReplyOpened"), partial);
-}
-
-async function partialReplyAllCore() {
-  const partial = await getPartialHtmlAsync();
-  await openReplyFormAsync(true, partial.html);
-  return buildPartialSuccessMessage(t("commands.notifications.partialReplyAllOpened"), partial);
-}
-
-async function partialForwardCore() {
-  const partial = await getPartialHtmlAsync();
-  await openForwardFormAsync(partial.html);
-  return buildPartialSuccessMessage(t("commands.notifications.partialForwardOpened"), partial);
-}
-
-async function removeImagesCore() {
+async function removeImagesWork() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
   const imgMatches = htmlBody.match(/<img[^>]*>/gi) || [];
 
   if (imgMatches.length === 0) {
-    return t("commands.notifications.imagesNone");
+    return { count: 0, sizeText: "" };
   }
 
   const cleanedHtml = htmlBody.replace(/<img[^>]*>/gi, "");
   await setBodyAsync(cleanedHtml, Office.CoercionType.Html);
 
   const totalSize = calculateImageSize(imgMatches);
-  const sizeText = formatFileSize(totalSize);
-
-  return sizeText
-    ? t("commands.notifications.imagesRemovedWithSize", {
-        count: imgMatches.length,
-        size: sizeText,
-      })
-    : t("commands.notifications.imagesRemoved", { count: imgMatches.length });
+  return { count: imgMatches.length, sizeText: formatFileSize(totalSize) };
 }
 
-async function removeAttachmentsCore() {
+async function removeImagesCore() {
+  const { count, sizeText } = await removeImagesWork();
+
+  if (count === 0) {
+    return t("commands.notifications.imagesNone");
+  }
+
+  return sizeText
+    ? t("commands.notifications.imagesRemovedWithSize", { count, size: sizeText })
+    : t("commands.notifications.imagesRemoved", { count });
+}
+
+async function removeAttachmentsWork() {
   const allAttachments = await getAttachmentsAsync();
   // Keep only real file attachments, not inline images (signatures, logos, etc.)
   const attachments = allAttachments.filter((a) => !a.isInline);
 
   if (attachments.length === 0) {
-    return t("commands.notifications.attachmentsNone");
+    return { count: 0, sizeText: "" };
   }
 
   const totalSize = attachments.reduce((sum, attachment) => {
@@ -375,14 +300,19 @@ async function removeAttachmentsCore() {
 
   await Promise.all(attachments.map((attachment) => removeAttachmentAsync(attachment.id)));
 
-  const sizeText = formatFileSize(totalSize);
+  return { count: attachments.length, sizeText: formatFileSize(totalSize) };
+}
+
+async function removeAttachmentsCore() {
+  const { count, sizeText } = await removeAttachmentsWork();
+
+  if (count === 0) {
+    return t("commands.notifications.attachmentsNone");
+  }
 
   return sizeText
-    ? t("commands.notifications.attachmentsRemovedWithSize", {
-        count: attachments.length,
-        size: sizeText,
-      })
-    : t("commands.notifications.attachmentsRemoved", { count: attachments.length });
+    ? t("commands.notifications.attachmentsRemovedWithSize", { count, size: sizeText })
+    : t("commands.notifications.attachmentsRemoved", { count });
 }
 
 function collectRegexPositions(htmlBody, regex, headerCheck) {
@@ -399,17 +329,11 @@ function collectRegexPositions(htmlBody, regex, headerCheck) {
 }
 
 function findTextSeparators(htmlBody) {
-  // Search for "De :" / "From :" confirmed by a second standard email header keyword
-  // (Envoyé/Sent, Objet/Subject, etc.) within 1500 chars.
-  // Allows HTML tags and entities between keyword and colon to handle all Outlook variants
-  // (e.g. <b>De</b>&nbsp;: or Envoy&eacute; :).
   const TAG_OR_GAP = "(?:\\s|<[^>]*>|&\\w+;|&#\\d+;|\\xA0)*";
   const fromRegex = new RegExp(
     "\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":",
     "gi"
   );
-  // Confirm with any standard reply header field: Envoyé/Sent, Objet/Subject, À/To, Cc.
-  // "Objet" and "Subject" have no accents so they survive any HTML encoding.
   const confirmRegex = new RegExp(
     "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
       "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
@@ -423,13 +347,11 @@ function findTextSeparators(htmlBody) {
   while ((match = fromRegex.exec(htmlBody)) !== null) {
     const after = htmlBody.substring(match.index, match.index + 1500);
     if (!confirmRegex.test(after)) continue;
-    // Walk back to the nearest block-level opening tag for a clean cut point
     const lookback = htmlBody.substring(Math.max(0, match.index - 500), match.index);
     const blockTag = lookback.match(/.*(<(?:p|div|tr|li)\b[^>]*>)/is);
     const cutPos = blockTag
       ? match.index - lookback.length + lookback.lastIndexOf(blockTag[1])
       : match.index;
-    // Deduplicate: skip if very close to previous position
     if (positions.length > 0 && cutPos - positions[positions.length - 1] < 200) continue;
     positions.push(cutPos);
   }
@@ -439,26 +361,21 @@ function findTextSeparators(htmlBody) {
 function findReplySeparators(htmlBody) {
   const headerPattern = /\b(From|De|Von|Da|Van|Fra)\s*(&nbsp;|\xA0)?\s*:/i;
 
-  // Strategy 1: divRplyFwdMsg ID (New Outlook, OWA)
   const divPositions = collectRegexPositions(
     htmlBody,
     /<div[^>]*\bid\s*=\s*["'](?:x_)*divRplyFwdMsg["'][^>]*>/gi
   );
 
-  // Strategy 2: border-top styled div (Desktop Outlook / Word)
   const borderPositions = collectRegexPositions(
     htmlBody,
     /<div[^>]*border-top\s*:\s*solid\s[^>]*>/gi,
     headerPattern
   );
 
-  // Strategy 3: <hr> followed by reply header
   const hrPositions = collectRegexPositions(htmlBody, /<hr[^>]*>/gi, headerPattern);
 
-  // Strategy 4: Text-based De:/From: + Objet:/Subject: (handles all HTML encodings)
   const textPositions = findTextSeparators(htmlBody);
 
-  // Return whichever strategy found the most separators
   let best = divPositions;
   if (borderPositions.length > best.length) best = borderPositions;
   if (hrPositions.length > best.length) best = hrPositions;
@@ -466,21 +383,18 @@ function findReplySeparators(htmlBody) {
   return best;
 }
 
-async function keepTwoRepliesCore() {
+async function keepTwoRepliesWork() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
   const separators = findReplySeparators(htmlBody);
 
   if (separators.length === 0) {
-    return t("commands.notifications.repliesNone");
+    return { found: 0, cleaned: false };
   }
 
   if (separators.length <= 2) {
-    return t("commands.notifications.repliesNoChange", { count: separators.length });
+    return { found: separators.length, cleaned: false };
   }
 
-  // Cut just before the 3rd reply separator.
-  // Also pull the cut point back past any visual separator (hr or underscore line)
-  // that immediately precedes the 3rd header, so it gets removed too.
   let cutPoint = separators[2];
   const before = htmlBody.substring(0, cutPoint);
 
@@ -488,7 +402,6 @@ async function keepTwoRepliesCore() {
   if (lastHr >= 0 && cutPoint - lastHr < 500) {
     cutPoint = lastHr;
   } else {
-    // Look for the last underscore separator block before cutPoint
     let lastUnderscoreIdx = -1;
     const underscoreRe = /_{10,}/g;
     let m;
@@ -502,31 +415,60 @@ async function keepTwoRepliesCore() {
   }
 
   await setBodyAsync(htmlBody.substring(0, cutPoint), Office.CoercionType.Html);
-  return t("commands.notifications.repliesCleaned", { count: separators.length });
+  return { found: separators.length, cleaned: true };
+}
+
+async function keepTwoRepliesCore() {
+  const { found, cleaned } = await keepTwoRepliesWork();
+
+  if (found === 0) {
+    return t("commands.notifications.repliesNone");
+  }
+
+  if (!cleaned) {
+    return t("commands.notifications.repliesNoChange", { count: found });
+  }
+
+  return t("commands.notifications.repliesCleaned", { count: found });
+}
+
+function formatCleanAllPart(prefix, count, sizeText) {
+  if (!count) return prefix + ": 0";
+  return sizeText ? `${prefix}: ${count} (${sizeText})` : `${prefix}: ${count}`;
 }
 
 async function cleanAllCore() {
-  const messages = [];
+  const parts = [];
 
   try {
-    messages.push(await removeImagesCore());
+    const img = await removeImagesWork();
+    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText));
   } catch (error) {
-    messages.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
+    parts.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
   }
 
   try {
-    messages.push(await removeAttachmentsCore());
+    const att = await removeAttachmentsWork();
+    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllAttachmentsPrefix"), att.count, att.sizeText));
   } catch (error) {
-    messages.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
+    parts.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
   }
 
   try {
-    messages.push(await keepTwoRepliesCore());
+    const rep = await keepTwoRepliesWork();
+    const prefix = t("commands.notifications.cleanAllRepliesPrefix");
+    if (rep.found === 0) {
+      parts.push(prefix + ": 0");
+    } else if (rep.cleaned) {
+      parts.push(`${prefix}: ${rep.found} → 2`);
+    } else {
+      parts.push(`${prefix}: ${rep.found}`);
+    }
   } catch (error) {
-    messages.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
+    parts.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
   }
 
-  return t("commands.notifications.cleanAllDone", { details: messages.join(" | ") });
+  return t("commands.notifications.cleanAllDone", { details: parts.join(" | ") });
 }
 
 // Register all commands with Office.
@@ -535,9 +477,7 @@ async function cleanAllCore() {
   ["removeAttachmentsCommand", removeAttachmentsCore, "cannotRemoveAttachments"],
   ["keepTwoRepliesCommand", keepTwoRepliesCore, "cannotKeepReplies"],
   ["cleanAllCommand", cleanAllCore, "cannotCleanAll"],
-  ["partialReplyCommand", partialReplyCore, "cannotPartialReply"],
-  ["partialReplyAllCommand", partialReplyAllCore, "cannotPartialReplyAll"],
-  ["partialForwardCommand", partialForwardCore, "cannotPartialForward"],
+  ["keepSelectionOnlyCommand", keepSelectionOnlyCore, "cannotKeepSelection"],
 ].forEach(([name, core, errorKey]) => {
   Office.actions.associate(name, (event) => {
     executeWithNotification(event, core, t(`commands.notifications.${errorKey}`));

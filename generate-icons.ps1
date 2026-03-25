@@ -118,114 +118,109 @@ New-Icon "icon-keep-replies" {
     $font.Dispose()
 }
 
-# --- Clean All: blue circle with green checkmark ---
+# --- Clean All: broom with green sparkles ---
 Write-Host "Clean All..."
 New-Icon "icon-clean-all" {
     param($g, $s)
     $p = $s / 80.0
-    # Blue circle
-    $pen = New-Object System.Drawing.Pen($blue, [Math]::Max(2, 4 * $p))
-    $g.DrawEllipse($pen, (8*$p), (8*$p), (64*$p), (64*$p))
-    $pen.Dispose()
-    # Green checkmark
-    $checkPen = New-Object System.Drawing.Pen($green, [Math]::Max(2, 5 * $p))
-    $checkPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $checkPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $checkPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
-    $g.DrawLine($checkPen, (22*$p), (40*$p), (34*$p), (54*$p))
-    $g.DrawLine($checkPen, (34*$p), (54*$p), (58*$p), (26*$p))
-    $checkPen.Dispose()
+    # Broom handle (diagonal)
+    $handlePen = New-Object System.Drawing.Pen($blue, [Math]::Max(2, 3.5 * $p))
+    $handlePen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $handlePen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $g.DrawLine($handlePen, (56*$p), (8*$p), (22*$p), (50*$p))
+    $handlePen.Dispose()
+    # Broom bristles (fan shape at bottom)
+    $bristlePen = New-Object System.Drawing.Pen($blue, [Math]::Max(1.5, 2.5 * $p))
+    $bristlePen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $bristlePen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (8*$p), (72*$p))
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (14*$p), (68*$p))
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (18*$p), (74*$p))
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (28*$p), (74*$p))
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (32*$p), (72*$p))
+    $g.DrawLine($bristlePen, (22*$p), (50*$p), (38*$p), (72*$p))
+    $bristlePen.Dispose()
+    # Green sparkles (3 four-pointed stars, bigger)
+    $sparkBrush = New-Object System.Drawing.SolidBrush($green)
+    # Sparkle 1 (top-right, large)
+    $cx = 66*$p; $cy = 16*$p; $r = 8*$p
+    $g.FillPolygon($sparkBrush, @(
+        (New-Object System.Drawing.PointF($cx, ($cy - $r))),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy - $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx + $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF($cx, ($cy + $r))),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx - $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy - $r*0.3)))
+    ))
+    # Sparkle 2 (right, medium)
+    $cx = 70*$p; $cy = 40*$p; $r = 6*$p
+    $g.FillPolygon($sparkBrush, @(
+        (New-Object System.Drawing.PointF($cx, ($cy - $r))),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy - $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx + $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF($cx, ($cy + $r))),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx - $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy - $r*0.3)))
+    ))
+    # Sparkle 3 (smaller)
+    $cx = 54*$p; $cy = 32*$p; $r = 4.5*$p
+    $g.FillPolygon($sparkBrush, @(
+        (New-Object System.Drawing.PointF($cx, ($cy - $r))),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy - $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx + $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx + $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF($cx, ($cy + $r))),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy + $r*0.3))),
+        (New-Object System.Drawing.PointF(($cx - $r), $cy)),
+        (New-Object System.Drawing.PointF(($cx - $r*0.3), ($cy - $r*0.3)))
+    ))
+    $sparkBrush.Dispose()
 }
 
-# --- Partial Reply: blue curved arrow left ---
-Write-Host "Partial Reply..."
-New-Icon "icon-reply" {
+# --- Keep Selection Only: crop frame around text ---
+Write-Host "Keep Selection..."
+New-Icon "icon-keep-selection" {
     param($g, $s)
     $p = $s / 80.0
-    $pen = New-Object System.Drawing.Pen($blue, [Math]::Max(2, 4 * $p))
-    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    # Curved arrow body
-    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $path.AddArc((14*$p), (20*$p), (50*$p), (40*$p), 180, -150)
-    $g.DrawPath($pen, $path)
-    $path.Dispose()
-    $pen.Dispose()
-    # Arrowhead
-    $brush = New-Object System.Drawing.SolidBrush($blue)
-    $arrowPts = @(
-        (New-Object System.Drawing.PointF((10*$p), (40*$p))),
-        (New-Object System.Drawing.PointF((26*$p), (28*$p))),
-        (New-Object System.Drawing.PointF((26*$p), (52*$p)))
-    )
-    $g.FillPolygon($brush, $arrowPts)
-    $brush.Dispose()
-}
-
-# --- Partial Reply All: double curved arrows in blue ---
-Write-Host "Partial Reply All..."
-New-Icon "icon-reply-all" {
-    param($g, $s)
-    $p = $s / 80.0
-    # Back arrow (lighter)
-    $pen1 = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(140, 21, 100, 192), [Math]::Max(2, 3.5 * $p))
-    $pen1.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen1.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $path1 = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $path1.AddArc((24*$p), (20*$p), (50*$p), (40*$p), 180, -150)
-    $g.DrawPath($pen1, $path1)
-    $path1.Dispose()
-    $pen1.Dispose()
-    $brush1 = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(140, 21, 100, 192))
-    $arrowPts1 = @(
-        (New-Object System.Drawing.PointF((20*$p), (40*$p))),
-        (New-Object System.Drawing.PointF((36*$p), (28*$p))),
-        (New-Object System.Drawing.PointF((36*$p), (52*$p)))
-    )
-    $g.FillPolygon($brush1, $arrowPts1)
-    $brush1.Dispose()
-    # Front arrow (full blue)
-    $pen2 = New-Object System.Drawing.Pen($blue, [Math]::Max(2, 3.5 * $p))
-    $pen2.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen2.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $path2 = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $path2.AddArc((8*$p), (20*$p), (50*$p), (40*$p), 180, -150)
-    $g.DrawPath($pen2, $path2)
-    $path2.Dispose()
-    $pen2.Dispose()
-    $brush2 = New-Object System.Drawing.SolidBrush($blue)
-    $arrowPts2 = @(
-        (New-Object System.Drawing.PointF((4*$p), (40*$p))),
-        (New-Object System.Drawing.PointF((20*$p), (28*$p))),
-        (New-Object System.Drawing.PointF((20*$p), (52*$p)))
-    )
-    $g.FillPolygon($brush2, $arrowPts2)
-    $brush2.Dispose()
-}
-
-# --- Partial Forward: green arrow right ---
-Write-Host "Partial Forward..."
-New-Icon "icon-forward" {
-    param($g, $s)
-    $p = $s / 80.0
-    $pen = New-Object System.Drawing.Pen($green, [Math]::Max(2, 4 * $p))
-    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    # Curved arrow body (mirrored)
-    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $path.AddArc((16*$p), (20*$p), (50*$p), (40*$p), 0, 150)
-    $g.DrawPath($pen, $path)
-    $path.Dispose()
-    $pen.Dispose()
-    # Arrowhead pointing right
-    $brush = New-Object System.Drawing.SolidBrush($green)
-    $arrowPts = @(
-        (New-Object System.Drawing.PointF((70*$p), (40*$p))),
-        (New-Object System.Drawing.PointF((54*$p), (28*$p))),
-        (New-Object System.Drawing.PointF((54*$p), (52*$p)))
-    )
-    $g.FillPolygon($brush, $arrowPts)
-    $brush.Dispose()
+    # Faded text lines outside crop area
+    $fadePen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(50, 21, 100, 192), [Math]::Max(1, 2 * $p))
+    $fadePen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $fadePen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $g.DrawLine($fadePen, (16*$p), (10*$p), (64*$p), (10*$p))
+    $g.DrawLine($fadePen, (16*$p), (18*$p), (54*$p), (18*$p))
+    $g.DrawLine($fadePen, (16*$p), (62*$p), (64*$p), (62*$p))
+    $g.DrawLine($fadePen, (16*$p), (70*$p), (48*$p), (70*$p))
+    $fadePen.Dispose()
+    # Bold text lines inside crop
+    $boldPen = New-Object System.Drawing.Pen($blue, [Math]::Max(2, 3 * $p))
+    $boldPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $boldPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $g.DrawLine($boldPen, (16*$p), (32*$p), (64*$p), (32*$p))
+    $g.DrawLine($boldPen, (16*$p), (40*$p), (58*$p), (40*$p))
+    $g.DrawLine($boldPen, (16*$p), (48*$p), (64*$p), (48*$p))
+    $boldPen.Dispose()
+    # Green crop corners (thick L-shapes)
+    $cropPen = New-Object System.Drawing.Pen($green, [Math]::Max(2, 3.5 * $p))
+    $cropPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $cropPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $cornerLen = 12 * $p
+    # Top-left
+    $g.DrawLine($cropPen, (8*$p), (24*$p), (8*$p), (24*$p + $cornerLen))
+    $g.DrawLine($cropPen, (8*$p), (24*$p), (8*$p + $cornerLen), (24*$p))
+    # Top-right
+    $g.DrawLine($cropPen, (72*$p), (24*$p), (72*$p), (24*$p + $cornerLen))
+    $g.DrawLine($cropPen, (72*$p), (24*$p), (72*$p - $cornerLen), (24*$p))
+    # Bottom-left
+    $g.DrawLine($cropPen, (8*$p), (56*$p), (8*$p), (56*$p - $cornerLen))
+    $g.DrawLine($cropPen, (8*$p), (56*$p), (8*$p + $cornerLen), (56*$p))
+    # Bottom-right
+    $g.DrawLine($cropPen, (72*$p), (56*$p), (72*$p), (56*$p - $cornerLen))
+    $g.DrawLine($cropPen, (72*$p), (56*$p), (72*$p - $cornerLen), (56*$p))
+    $cropPen.Dispose()
 }
 
 Write-Host "All icons generated!"
