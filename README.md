@@ -20,24 +20,25 @@ Long email threads accumulate images, attachments, and dozens of quoted replies 
 
 ## Features
 
-### While composing (compose mode)
+All actions are available in **compose mode** from the Outlook ribbon dropdown:
 
 | Action | Description |
 |--------|-------------|
-| **Remove images** | Strips all inline images from the email body |
-| **Remove attachments** | Removes all attached files |
+| **Remove images** | Strips all inline images from the email body and shows the space saved |
+| **Remove attachments** | Removes all attached files (excluding inline) and shows the space saved |
 | **Keep 2 replies** | Keeps only the 2 most recent replies in the thread and removes everything below |
-| **Full cleanup** | Runs all of the above in a single click |
+| **Keep selection only** | Replaces the quoted content with only the text you selected |
+| **Full cleanup** | Runs images + attachments + replies cleanup in one click with a detailed summary |
 
-### While reading (read mode)
+### Full cleanup summary
 
-| Action | Description |
-|--------|-------------|
-| **Partial reply** | Opens a reply draft containing only the text you selected |
-| **Partial reply all** | Opens a reply-all draft with your selection |
-| **Partial forward** | Opens a forward draft with your selection |
+The full cleanup action provides a detailed report showing what was done:
 
-These read-mode actions are available both from the **ribbon menu** and from a dedicated **side panel** (taskpane).
+```
+✅ Full cleanup completed — Images: 3 (150 KB) | Attachments: 2 (1.2 MB) | Replies: 5 → 2
+```
+
+Each category shows the count of items processed, the space saved when applicable, and for replies the reduction (e.g. 5 → 2).
 
 ## How it works
 
@@ -48,14 +49,9 @@ Quick Actions
 ├── Remove images
 ├── Remove attachments
 ├── Keep 2 replies
-├── Full cleanup
-├── ─────────────
-├── Partial reply
-├── Partial reply all
-└── Partial forward
+├── Keep selection only
+└── Full cleanup
 ```
-
-The partial reply/forward actions use your **current text selection** in the email body. Select the relevant paragraph, click the action, and a new draft opens with only that content pre-filled.
 
 ## Languages
 
