@@ -7,6 +7,7 @@
 
 import { t } from "../shared/i18n";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
+import { findReplySeparators } from "../shared/reply-detection";
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -315,73 +316,6 @@ async function removeAttachmentsCore() {
     : t("commands.notifications.attachmentsRemoved", { count });
 }
 
-function collectRegexPositions(htmlBody, regex, headerCheck) {
-  const positions = [];
-  let match;
-  while ((match = regex.exec(htmlBody)) !== null) {
-    if (headerCheck) {
-      const after = htmlBody.substring(match.index, match.index + 500);
-      if (!headerCheck.test(after)) continue;
-    }
-    positions.push(match.index);
-  }
-  return positions;
-}
-
-function findTextSeparators(htmlBody) {
-  const TAG_OR_GAP = "(?:\\s|<[^>]*>|&\\w+;|&#\\d+;|\\xA0)*";
-  const fromRegex = new RegExp(
-    "\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":",
-    "gi"
-  );
-  const confirmRegex = new RegExp(
-    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
-      "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
-      TAG_OR_GAP +
-      ":",
-    "i"
-  );
-
-  const positions = [];
-  let match;
-  while ((match = fromRegex.exec(htmlBody)) !== null) {
-    const after = htmlBody.substring(match.index, match.index + 1500);
-    if (!confirmRegex.test(after)) continue;
-    const lookback = htmlBody.substring(Math.max(0, match.index - 500), match.index);
-    const blockTag = lookback.match(/.*(<(?:p|div|tr|li)\b[^>]*>)/is);
-    const cutPos = blockTag
-      ? match.index - lookback.length + lookback.lastIndexOf(blockTag[1])
-      : match.index;
-    if (positions.length > 0 && cutPos - positions[positions.length - 1] < 200) continue;
-    positions.push(cutPos);
-  }
-  return positions;
-}
-
-function findReplySeparators(htmlBody) {
-  const headerPattern = /\b(From|De|Von|Da|Van|Fra)\s*(&nbsp;|\xA0)?\s*:/i;
-
-  const divPositions = collectRegexPositions(
-    htmlBody,
-    /<div[^>]*\bid\s*=\s*["'](?:x_)*divRplyFwdMsg["'][^>]*>/gi
-  );
-
-  const borderPositions = collectRegexPositions(
-    htmlBody,
-    /<div[^>]*border-top\s*:\s*solid\s[^>]*>/gi,
-    headerPattern
-  );
-
-  const hrPositions = collectRegexPositions(htmlBody, /<hr[^>]*>/gi, headerPattern);
-
-  const textPositions = findTextSeparators(htmlBody);
-
-  let best = divPositions;
-  if (borderPositions.length > best.length) best = borderPositions;
-  if (hrPositions.length > best.length) best = hrPositions;
-  if (textPositions.length > best.length) best = textPositions;
-  return best;
-}
 
 async function keepTwoRepliesWork() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
