@@ -496,3 +496,165 @@ describe("findReplySeparators — existing Outlook HTML strategies", () => {
     expect(findReplySeparators(html)).toHaveLength(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// collectRegexPositions — additional edge cases
+// ---------------------------------------------------------------------------
+
+describe("collectRegexPositions — additional edge cases", () => {
+  test("includes match when headerCheck passes within 500 chars", () => {
+    const html = "<hr>From: John";
+    const headerCheck = /\bFrom\s*:/i;
+    expect(collectRegexPositions(html, /<hr[^>]*>/gi, headerCheck)).toEqual([0]);
+  });
+
+  test("excludes match when headerCheck target is beyond 500 chars", () => {
+    const html = "<hr>" + "x".repeat(600) + "From: someone";
+    const headerCheck = /\bFrom\s*:/i;
+    expect(collectRegexPositions(html, /<hr[^>]*>/gi, headerCheck)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findReplySeparators — border-top strategy
+// ---------------------------------------------------------------------------
+
+describe("findReplySeparators — border-top strategy", () => {
+  function makeBorderDiv(content = "") {
+    return `<div style="border-top: solid #E1E1E1 1.0pt; padding: 3.0pt 0cm 0cm 0cm">${content}</div>`;
+  }
+
+  test("detects border-top div followed by From:", () => {
+    const html = `<p>Reply</p>${makeBorderDiv("<b>From:</b> someone")}`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("detects border-top div followed by De: (Spanish/French)", () => {
+    const html = `<p>Respuesta</p>${makeBorderDiv("<b>De:</b> alguien")}`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("ignores border-top div NOT followed by a From-like header", () => {
+    const html = `<p>Reply</p><div style="border-top: solid red 1pt">Just a styled box</div>`;
+    expect(findReplySeparators(html)).toHaveLength(0);
+  });
+
+  test("detects multiple border-top separators in a thread", () => {
+    const sep = makeBorderDiv("<b>From:</b> someone");
+    const html = `<p>R3</p>${sep}<p>R2</p>${sep}<p>R1</p>${sep}<p>Original</p>`;
+    expect(findReplySeparators(html)).toHaveLength(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findReplySeparators — <hr> strategy additional cases
+// ---------------------------------------------------------------------------
+
+describe("findReplySeparators — <hr> strategy additional cases", () => {
+  test("detects self-closing <hr /> with From: header", () => {
+    const html = `<p>Reply</p><hr /><p>From: alice</p>`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("detects <hr> with attributes followed by From:", () => {
+    const html = `<p>Reply</p><hr style="color:grey"><p>From: bob@example.com</p>`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("ignores <hr> NOT followed by a From-like header", () => {
+    const html = `<p>Section 1</p><hr><p>Section 2 with no header</p>`;
+    expect(findReplySeparators(html)).toHaveLength(0);
+  });
+
+  test("detects two <hr> separators in a thread", () => {
+    const html =
+      `<p>R2</p><hr><p>From: bob</p><p>R1</p><hr><p>From: alice</p><p>Original</p>`;
+    expect(findReplySeparators(html)).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findTextSeparators — additional multilingual pairs
+// ---------------------------------------------------------------------------
+
+describe("findTextSeparators — additional multilingual pairs", () => {
+  function makeTextBlock(fromLabel, sentLabel) {
+    return email(
+      p("My reply"),
+      p(`${fromLabel}: someone@example.com`),
+      p(`${sentLabel}: Monday, January 1, 2024`)
+    );
+  }
+
+  test("detects French De/Objet pair", () => {
+    expect(findTextSeparators(makeTextBlock("De", "Objet"))).toHaveLength(1);
+  });
+
+  test("detects German Von/Betreff pair", () => {
+    expect(findTextSeparators(makeTextBlock("Von", "Betreff"))).toHaveLength(1);
+  });
+
+  test("detects Dutch Van/Verzonden pair", () => {
+    expect(findTextSeparators(makeTextBlock("Van", "Verzonden"))).toHaveLength(1);
+  });
+
+  test("detects Dutch Van/Onderwerp pair", () => {
+    expect(findTextSeparators(makeTextBlock("Van", "Onderwerp"))).toHaveLength(1);
+  });
+
+  test("detects Italian Da/Inviato pair", () => {
+    expect(findTextSeparators(makeTextBlock("Da", "Inviato"))).toHaveLength(1);
+  });
+
+  test("detects Italian Da/Oggetto pair", () => {
+    expect(findTextSeparators(makeTextBlock("Da", "Oggetto"))).toHaveLength(1);
+  });
+
+  test("handles Envoyé with &#233; numeric entity", () => {
+    const html = email(
+      p("Ma réponse"),
+      p("De: quelqu'un"),
+      p("Envoy&#233;: lundi 1 janvier 2024")
+    );
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+
+  test("deduplicates separators within 200 chars of each other", () => {
+    const sep = `<p>From: x</p><p>Sent: y</p>`;
+    const html = `<p>R</p>${sep}${sep}`;
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findReplySeparators — edge cases
+// ---------------------------------------------------------------------------
+
+describe("findReplySeparators — edge cases", () => {
+  test("returns empty array for empty string", () => {
+    expect(findReplySeparators("")).toEqual([]);
+  });
+
+  test("detects forward (divRplyFwdMsg is used for both replies and forwards)", () => {
+    const html =
+      `<p>My forward comment</p>` +
+      `<div id="divRplyFwdMsg">` +
+        `<p>-------- Forwarded Message --------</p>` +
+        `<p>From: original@sender.com</p>` +
+      `</div>`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("is robust to extra attributes on the divRplyFwdMsg element", () => {
+    const html = `<div class="someClass" id="divRplyFwdMsg" style="color:red">content</div>`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+
+  test("handles non-breaking space (\\u00A0) between header keyword and colon", () => {
+    const nbsp = "\u00A0";
+    const html =
+      `<p>Reply</p><hr>` +
+      `<p>From${nbsp}: alice@example.com</p>`;
+    expect(findReplySeparators(html)).toHaveLength(1);
+  });
+});
