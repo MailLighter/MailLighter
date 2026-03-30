@@ -132,6 +132,69 @@ describe("findTextSeparators", () => {
 });
 
 // ---------------------------------------------------------------------------
+// findTextSeparators — Spanish (Outlook ES)
+// ---------------------------------------------------------------------------
+
+describe("findTextSeparators — Spanish Outlook headers", () => {
+  test("detects De/Enviado/Asunto (Outlook ES reply)", () => {
+    const html = email(
+      p("Mi respuesta"),
+      p("De: remitente@example.com"),
+      p("Enviado: lunes, 30 de marzo de 2026 10:00"),
+      p("Asunto: RE: Reunión")
+    );
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+
+  test("detects De/Enviado el/Asunto (Outlook ES with 'el')", () => {
+    const html = email(
+      p("Mi respuesta"),
+      p("De: remitente@example.com"),
+      p("Enviado el: lunes, 30 de marzo de 2026 10:00"),
+      p("Para: destinatario@example.com"),
+      p("Asunto: RE: Reunión")
+    );
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+
+  test("detects De/Asunto without Enviado", () => {
+    const html = email(
+      p("Mi respuesta"),
+      p("De: remitente@example.com"),
+      p("Asunto: RE: Reunión")
+    );
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+
+  test("does not match De without Enviado or Asunto (no false positive)", () => {
+    const html = email(
+      p("De: está presente pero nada más que confirme el separador")
+    );
+    expect(findTextSeparators(html)).toHaveLength(0);
+  });
+
+  test("detects 2 Spanish replies in a thread", () => {
+    const block = email(
+      longP("Respuesta 2"),
+      p("De: b@b.com"), p("Enviado el: domingo"), p("Asunto: RE: test"),
+      longP("Respuesta 1"),
+      p("De: a@a.com"), p("Enviado el: sábado"), p("Asunto: RE: test"),
+      p("Original")
+    );
+    expect(findTextSeparators(block)).toHaveLength(2);
+  });
+
+  test("detects Asunto with HTML tags between label and colon", () => {
+    const html = email(
+      p("Mi respuesta"),
+      p("De: remitente@example.com"),
+      p("Asunto<span> </span>: RE: Reunión")
+    );
+    expect(findTextSeparators(html)).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // findDashedSeparators — pattern 2: Thunderbird/mobile style
 // ---------------------------------------------------------------------------
 

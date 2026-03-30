@@ -36,8 +36,8 @@ export function findTextSeparators(htmlBody) {
     "gi"
   );
   const confirmRegex = new RegExp(
-    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
-      "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
+    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Enviado(?:\\s+el)?|Gesendet|Verzonden|Inviato" +
+      "|Objet|Subject|Asunto|Betreff|Onderwerp|Oggetto)" +
       TAG_OR_GAP +
       ":",
     "i"
