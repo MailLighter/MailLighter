@@ -382,10 +382,27 @@ function findReplySeparators(htmlBody) {
 
   const textPositions = findTextSeparators(htmlBody);
 
+  // Detect Gmail/Apple Mail/Thunderbird inline attributions:
+  // "... a écrit :", "... wrote:", "... escribió:", "... schrieb ...:"
+  const wroteRegex = /\b(a\s+[eé]crit|wrote|escribi[oó]|schrieb|geschreven|scrisse)\s*:/gi;
+  const wrotePositions = [];
+  let wroteMatch;
+  while ((wroteMatch = wroteRegex.exec(htmlBody)) !== null) {
+    const lookback = htmlBody.substring(Math.max(0, wroteMatch.index - 500), wroteMatch.index);
+    const blockTag = lookback.match(/.*(<(?:p|div|blockquote|li)\b[^>]*>)/is);
+    const cutPos = blockTag
+      ? wroteMatch.index - lookback.length + lookback.lastIndexOf(blockTag[1])
+      : wroteMatch.index;
+    if (wrotePositions.length > 0 && cutPos - wrotePositions[wrotePositions.length - 1] < 200)
+      continue;
+    wrotePositions.push(cutPos);
+  }
+
   let best = divPositions;
   if (borderPositions.length > best.length) best = borderPositions;
   if (hrPositions.length > best.length) best = hrPositions;
   if (textPositions.length > best.length) best = textPositions;
+  if (wrotePositions.length > best.length) best = wrotePositions;
   return best;
 }
 
