@@ -382,9 +382,11 @@ function findReplySeparators(htmlBody) {
 
   const textPositions = findTextSeparators(htmlBody);
 
-  // Detect Gmail/Apple Mail/Thunderbird inline attributions:
-  // "... a écrit :", "... wrote:", "... escribió:", "... schrieb ...:"
-  const wroteRegex = /\b(a\s+[eé]crit|wrote|escribi[oó]|escribe|schrieb|geschreven|scrisse)\s*:/gi;
+  // Detect Gmail/Apple Mail/Thunderbird inline attributions (past & present tense):
+  // FR "a écrit", EN "wrote/writes", ES "escribió/escribe",
+  // DE "schrieb/schreibt", NL "geschreven/schrijft", IT "scrisse/scrive"
+  const wroteRegex =
+    /\b(a\s+[eé]crit|wrot?e|writes|escribi[oó]|escribe|schrieb|schreibt|geschreven|schrijft|scrisse|scrive)\s*:/gi;
   const wrotePositions = [];
   let wroteMatch;
   while ((wroteMatch = wroteRegex.exec(htmlBody)) !== null) {
