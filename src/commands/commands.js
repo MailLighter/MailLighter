@@ -3,7 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
+/* global Office, console */
 
 import { t } from "../shared/i18n";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
@@ -44,7 +44,11 @@ function officeAsync(target, method, unavailableKey, failedKey, ...args) {
         return;
       }
 
-      reject(new Error(result.error && result.error.message ? result.error.message : t(failedKey)));
+      const rawMessage = result.error && result.error.message ? result.error.message : "";
+      if (rawMessage) {
+        console.error(`[MailLighter] ${method} failed:`, rawMessage);
+      }
+      reject(new Error(t(failedKey)));
     });
   });
 }
@@ -152,8 +156,10 @@ async function executeWithNotification(
     const successMessage = await worker();
     notify(successMessage);
   } catch (error) {
-    const details = error instanceof Error && error.message ? ` (${error.message})` : "";
-    notify(`${errorMessage}${details}`);
+    if (error instanceof Error && error.message) {
+      console.error("[MailLighter]", error.message);
+    }
+    notify(errorMessage);
   } finally {
     event.completed();
   }
