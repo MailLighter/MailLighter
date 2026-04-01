@@ -341,8 +341,8 @@ function findTextSeparators(htmlBody) {
     "gi"
   );
   const confirmRegex = new RegExp(
-    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
-      "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
+    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Enviado|Gesendet|Verzonden|Inviato" +
+      "|Objet|Subject|Asunto|Betreff|Onderwerp|Oggetto)" +
       TAG_OR_GAP +
       ":",
     "i"
@@ -384,7 +384,7 @@ function findReplySeparators(htmlBody) {
 
   // Detect Gmail/Apple Mail/Thunderbird inline attributions:
   // "... a écrit :", "... wrote:", "... escribió:", "... schrieb ...:"
-  const wroteRegex = /\b(a\s+[eé]crit|wrote|escribi[oó]|schrieb|geschreven|scrisse)\s*:/gi;
+  const wroteRegex = /\b(a\s+[eé]crit|wrote|escribi[oó]|escribe|schrieb|geschreven|scrisse)\s*:/gi;
   const wrotePositions = [];
   let wroteMatch;
   while ((wroteMatch = wroteRegex.exec(htmlBody)) !== null) {
