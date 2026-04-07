@@ -19,10 +19,7 @@ export function collectRegexPositions(htmlBody, regex, headerCheck) {
 
 export function findTextSeparators(htmlBody) {
   const TAG_OR_GAP = "(?:\\s|<[^>]*>|&\\w+;|&#\\d+;|\\xA0)*";
-  const fromRegex = new RegExp(
-    "\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":",
-    "gi"
-  );
+  const fromRegex = new RegExp("\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":", "gi");
   const confirmRegex = new RegExp(
     "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Enviado|Gesendet|Verzonden|Inviato" +
       "|Objet|Subject|Asunto|Betreff|Onderwerp|Oggetto)" +
@@ -72,21 +69,44 @@ export function findReplySeparators(htmlBody) {
     /\b(a\s+[eé]crit|wrot?e|writes|escribi[oó]|escribe|schrieb|schreibt|geschreven|schrijft|scrisse|scrive)\s*:/gi;
   const wrotePositions = [];
   let wroteMatch;
+  // Matches preamble lines like "-------- Original Message --------"
+  // or "-----Message d'origine-----" that often appear in a separate block
+  // just before the "wrote:" attribution line (ProtonMail, Thunderbird).
+  const preambleRegex =
+    /<[^>]+>[\s-]*(?:Original Message|Message d'origine|Mensaje original|Ursprüngliche Nachricht|Origineel bericht|Messaggio originale)[\s-]*<\/[^>]+>\s*$/i;
+
   while ((wroteMatch = wroteRegex.exec(htmlBody)) !== null) {
     const lookback = htmlBody.substring(Math.max(0, wroteMatch.index - 500), wroteMatch.index);
     const blockTag = lookback.match(/.*(<(?:p|div|blockquote|li)\b[^>]*>)/is);
-    const cutPos = blockTag
+    let cutPos = blockTag
       ? wroteMatch.index - lookback.length + lookback.lastIndexOf(blockTag[1])
       : wroteMatch.index;
-    if (wrotePositions.length > 0 && cutPos - wrotePositions[wrotePositions.length - 1] < 200)
-      continue;
+
+    // If a preamble line immediately precedes the block, include it in the cut.
+    const before = htmlBody.substring(Math.max(0, cutPos - 300), cutPos);
+    const preambleMatch = before.match(preambleRegex);
+    if (preambleMatch) {
+      cutPos = cutPos - before.length + before.indexOf(preambleMatch[0]);
+    }
+
     wrotePositions.push(cutPos);
   }
 
-  let best = divPositions;
-  if (borderPositions.length > best.length) best = borderPositions;
-  if (hrPositions.length > best.length) best = hrPositions;
-  if (textPositions.length > best.length) best = textPositions;
-  if (wrotePositions.length > best.length) best = wrotePositions;
-  return best;
+  // Merge all strategies, sort by position, then deduplicate:
+  // positions within 200 chars of each other belong to the same reply boundary.
+  const all = [
+    ...divPositions,
+    ...borderPositions,
+    ...hrPositions,
+    ...textPositions,
+    ...wrotePositions,
+  ].sort((a, b) => a - b);
+
+  const merged = [];
+  for (const pos of all) {
+    if (merged.length === 0 || pos - merged[merged.length - 1] >= 200) {
+      merged.push(pos);
+    }
+  }
+  return merged;
 }
