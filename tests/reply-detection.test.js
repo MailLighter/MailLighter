@@ -251,9 +251,9 @@ describe("findReplySeparators", () => {
   });
 
   // -----------------------------------------------------------------------
-  // Multi-reply threads — best strategy wins
+  // Multi-reply threads — all strategies merged
   // -----------------------------------------------------------------------
-  test("picks strategy with the most separators", () => {
+  test("detects all separators in a homogeneous wrote: thread", () => {
     const html =
       "<p>My reply</p>" +
       "<p>On Mon, John wrote:</p>" +
@@ -266,6 +266,45 @@ describe("findReplySeparators", () => {
       "<blockquote><p>Third reply</p></blockquote>";
     const seps = findReplySeparators(html);
     expect(seps.length).toBe(3);
+  });
+
+  // -----------------------------------------------------------------------
+  // Mixed thread — Outlook (De+Envoyé) + ProtonMail (wrote:) + Gmail (a écrit:)
+  // Previously only 3 would be detected (best strategy); now all 6 are merged.
+  // -----------------------------------------------------------------------
+  test("merges separators across mixed Outlook/ProtonMail/Gmail thread", () => {
+    const sep = "<p>" + "x".repeat(300) + "</p>";
+    const html =
+      // Sep 1 — Outlook header (textPositions)
+      "<p>Alex</p>" +
+      "<p>De: Alexandre Allouche<br>Envoyé: Lundi 06 avril 2026<br>Objet: Re:</p>" +
+      "<p>Alexandre Allouche</p>" +
+      sep +
+      // Sep 2 — ProtonMail Original Message + wrote (wrotePositions)
+      "<p>-------- Original Message --------</p>" +
+      "<p>On Monday, 03/30/26 at 16:46 Damien Scali &lt;damien@bred.fr&gt; wrote:</p>" +
+      "<p>Je vous confirme que les comptes sont clos.</p>" +
+      sep +
+      // Sep 3 — French Outlook header (textPositions)
+      "<p>-----Message d'origine-----</p>" +
+      "<p>De : Alexandre Allouche<br>Envoyé : jeudi 26 mars 2026<br>Objet : Re:</p>" +
+      "<p>Comment se fait-il que nous ayons encore accès ?</p>" +
+      sep +
+      // Sep 4 — ProtonMail Original Message + wrote (wrotePositions)
+      "<p>-------- Original Message --------</p>" +
+      "<p>On Wednesday, 03/25/26 at 09:45 Damien Scali &lt;damien@bred.fr&gt; wrote:</p>" +
+      "<p>Ne tenez pas compte des courriers reçus.</p>" +
+      sep +
+      // Sep 5 — French Outlook header (textPositions)
+      "<p>-----Message d'origine-----</p>" +
+      "<p>De : Alexandre Allouche<br>Envoyé : mardi 24 mars 2026<br>Objet : Re:</p>" +
+      "<p>Nous avons réceptionné 2 courriers.</p>" +
+      sep +
+      // Sep 6 — Gmail French attribution (wrotePositions)
+      "<p>Le jeudi 13 novembre 2025, Alexandre Allouche &lt;a@protonmail.com&gt; a écrit :</p>" +
+      "<blockquote><p>Voici le RIB permettant le transfert.</p></blockquote>";
+    const seps = findReplySeparators(html);
+    expect(seps.length).toBe(6);
   });
 
   // -----------------------------------------------------------------------
@@ -318,6 +357,27 @@ describe("findReplySeparators", () => {
       "<blockquote><p>Voy a presentar la propuesta...</p></blockquote>";
     const seps = findReplySeparators(html);
     expect(seps.length).toBe(3);
+  });
+
+  // -----------------------------------------------------------------------
+  // Preamble line included in cut (ProtonMail / Thunderbird format)
+  // -----------------------------------------------------------------------
+  test("includes '-------- Original Message --------' preamble in cut position", () => {
+    const sep = "<p>" + "x".repeat(300) + "</p>";
+    const html =
+      "<p>My reply</p>" +
+      "<p>-------- Original Message --------</p>" +
+      "<p>On Monday, John &lt;john@test.com&gt; wrote:</p>" +
+      "<p>First quoted reply</p>" +
+      sep +
+      "<p>-------- Original Message --------</p>" +
+      "<p>On Tuesday, Jane &lt;jane@test.com&gt; wrote:</p>" +
+      "<p>Second quoted reply</p>";
+    const seps = findReplySeparators(html);
+    // Both cut points must be at or before the "----" line, not after it.
+    expect(seps.length).toBe(2);
+    expect(html.substring(seps[0], seps[0] + 50)).toMatch(/Original Message/i);
+    expect(html.substring(seps[1], seps[1] + 50)).toMatch(/Original Message/i);
   });
 
   // -----------------------------------------------------------------------
