@@ -3,10 +3,11 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
+/* global Office, console */
 
 import { t } from "../shared/i18n";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
+import { findReplySeparators } from "../shared/reply-detection";
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -17,10 +18,6 @@ function notify(message, icon = "Icon.80x80") {
 
   if (!item || !item.notificationMessages) {
     return;
-  }
-
-  if (typeof item.notificationMessages.removeAsync === "function") {
-    item.notificationMessages.removeAsync("ActionPerformanceNotification");
   }
 
   item.notificationMessages.replaceAsync("MailLighterNotification", {
@@ -44,7 +41,11 @@ function officeAsync(target, method, unavailableKey, failedKey, ...args) {
         return;
       }
 
-      reject(new Error(result.error && result.error.message ? result.error.message : t(failedKey)));
+      const rawMessage = result.error && result.error.message ? result.error.message : "";
+      if (rawMessage) {
+        console.error(`[MailLighter] ${method} failed:`, rawMessage);
+      }
+      reject(new Error(t(failedKey)));
     });
   });
 }
@@ -152,8 +153,10 @@ async function executeWithNotification(
     const successMessage = await worker();
     notify(successMessage);
   } catch (error) {
-    const details = error instanceof Error && error.message ? ` (${error.message})` : "";
-    notify(`${errorMessage}${details}`);
+    if (error instanceof Error && error.message) {
+      console.error("[MailLighter]", error.message);
+    }
+    notify(errorMessage);
   } finally {
     event.completed();
   }
@@ -241,7 +244,7 @@ async function keepSelectionOnlyCore() {
     const newBody = userArea + separator + selectedHtml;
     await setBodyAsync(newBody, Office.CoercionType.Html);
   } else {
-    const parts = ['<div><br></div>', separator, selectedHtml];
+    const parts = ["<div><br></div>", separator, selectedHtml];
     await setBodyAsync(parts.join(""), Office.CoercionType.Html);
   }
 
@@ -249,7 +252,7 @@ async function keepSelectionOnlyCore() {
   //    Works in Old Outlook. In New Outlook the cursor stays at the bottom
   //    (known Office.js API limitation).
   try {
-    await prependAsync('<div><br></div>', Office.CoercionType.Html);
+    await prependAsync("<div><br></div>", Office.CoercionType.Html);
   } catch {
     // prependAsync not available in this client
   }
@@ -262,14 +265,14 @@ async function removeImagesWork() {
   const imgMatches = htmlBody.match(/<img[^>]*>/gi) || [];
 
   if (imgMatches.length === 0) {
-    return { count: 0, sizeText: "" };
+    return { count: 0, sizeText: "", totalBytes: 0 };
   }
 
   const cleanedHtml = htmlBody.replace(/<img[^>]*>/gi, "");
   await setBodyAsync(cleanedHtml, Office.CoercionType.Html);
 
-  const totalSize = calculateImageSize(imgMatches);
-  return { count: imgMatches.length, sizeText: formatFileSize(totalSize) };
+  const totalBytes = calculateImageSize(imgMatches);
+  return { count: imgMatches.length, sizeText: formatFileSize(totalBytes), totalBytes };
 }
 
 async function removeImagesCore() {
@@ -300,7 +303,7 @@ async function removeAttachmentsWork() {
 
   await Promise.all(attachments.map((attachment) => removeAttachmentAsync(attachment.id)));
 
-  return { count: attachments.length, sizeText: formatFileSize(totalSize) };
+  return { count: attachments.length, sizeText: formatFileSize(totalSize), totalBytes: totalSize };
 }
 
 async function removeAttachmentsCore() {
@@ -313,74 +316,6 @@ async function removeAttachmentsCore() {
   return sizeText
     ? t("commands.notifications.attachmentsRemovedWithSize", { count, size: sizeText })
     : t("commands.notifications.attachmentsRemoved", { count });
-}
-
-function collectRegexPositions(htmlBody, regex, headerCheck) {
-  const positions = [];
-  let match;
-  while ((match = regex.exec(htmlBody)) !== null) {
-    if (headerCheck) {
-      const after = htmlBody.substring(match.index, match.index + 500);
-      if (!headerCheck.test(after)) continue;
-    }
-    positions.push(match.index);
-  }
-  return positions;
-}
-
-function findTextSeparators(htmlBody) {
-  const TAG_OR_GAP = "(?:\\s|<[^>]*>|&\\w+;|&#\\d+;|\\xA0)*";
-  const fromRegex = new RegExp(
-    "\\b(De|From|Von|Van|Da|Fra)" + TAG_OR_GAP + ":",
-    "gi"
-  );
-  const confirmRegex = new RegExp(
-    "\\b(Sent|Envoy(?:é|&eacute;|&#233;|e)|Gesendet|Verzonden|Inviato" +
-      "|Objet|Subject|Betreff|Onderwerp|Oggetto)" +
-      TAG_OR_GAP +
-      ":",
-    "i"
-  );
-
-  const positions = [];
-  let match;
-  while ((match = fromRegex.exec(htmlBody)) !== null) {
-    const after = htmlBody.substring(match.index, match.index + 1500);
-    if (!confirmRegex.test(after)) continue;
-    const lookback = htmlBody.substring(Math.max(0, match.index - 500), match.index);
-    const blockTag = lookback.match(/.*(<(?:p|div|tr|li)\b[^>]*>)/is);
-    const cutPos = blockTag
-      ? match.index - lookback.length + lookback.lastIndexOf(blockTag[1])
-      : match.index;
-    if (positions.length > 0 && cutPos - positions[positions.length - 1] < 200) continue;
-    positions.push(cutPos);
-  }
-  return positions;
-}
-
-function findReplySeparators(htmlBody) {
-  const headerPattern = /\b(From|De|Von|Da|Van|Fra)\s*(&nbsp;|\xA0)?\s*:/i;
-
-  const divPositions = collectRegexPositions(
-    htmlBody,
-    /<div[^>]*\bid\s*=\s*["'](?:x_)*divRplyFwdMsg["'][^>]*>/gi
-  );
-
-  const borderPositions = collectRegexPositions(
-    htmlBody,
-    /<div[^>]*border-top\s*:\s*solid\s[^>]*>/gi,
-    headerPattern
-  );
-
-  const hrPositions = collectRegexPositions(htmlBody, /<hr[^>]*>/gi, headerPattern);
-
-  const textPositions = findTextSeparators(htmlBody);
-
-  let best = divPositions;
-  if (borderPositions.length > best.length) best = borderPositions;
-  if (hrPositions.length > best.length) best = hrPositions;
-  if (textPositions.length > best.length) best = textPositions;
-  return best;
 }
 
 async function keepTwoRepliesWork() {
@@ -414,12 +349,13 @@ async function keepTwoRepliesWork() {
     }
   }
 
+  const savedBytes = htmlBody.length - cutPoint;
   await setBodyAsync(htmlBody.substring(0, cutPoint), Office.CoercionType.Html);
-  return { found: separators.length, cleaned: true };
+  return { found: separators.length, cleaned: true, savedBytes };
 }
 
 async function keepTwoRepliesCore() {
-  const { found, cleaned } = await keepTwoRepliesWork();
+  const { found, cleaned, savedBytes } = await keepTwoRepliesWork();
 
   if (found === 0) {
     return t("commands.notifications.repliesNone");
@@ -429,27 +365,42 @@ async function keepTwoRepliesCore() {
     return t("commands.notifications.repliesNoChange", { count: found });
   }
 
-  return t("commands.notifications.repliesCleaned", { count: found });
+  const sizeText = savedBytes ? formatFileSize(savedBytes) : "";
+  return sizeText
+    ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
+    : t("commands.notifications.repliesCleaned", { count: found });
 }
 
 function formatCleanAllPart(prefix, count, sizeText) {
-  if (!count) return prefix + ": 0";
-  return sizeText ? `${prefix}: ${count} (${sizeText})` : `${prefix}: ${count}`;
+  const colon = t("units.colon");
+  if (!count) return prefix + colon + "0";
+  return sizeText ? `${prefix}${colon}${count} (${sizeText})` : `${prefix}${colon}${count}`;
 }
 
 async function cleanAllCore() {
   const parts = [];
+  let totalBytes = 0;
 
   try {
     const img = await removeImagesWork();
-    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText));
+    parts.push(
+      formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText)
+    );
+    totalBytes += img.totalBytes || 0;
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
   }
 
   try {
     const att = await removeAttachmentsWork();
-    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllAttachmentsPrefix"), att.count, att.sizeText));
+    parts.push(
+      formatCleanAllPart(
+        t("commands.notifications.cleanAllAttachmentsPrefix"),
+        att.count,
+        att.sizeText
+      )
+    );
+    totalBytes += att.totalBytes || 0;
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
   }
@@ -457,18 +408,30 @@ async function cleanAllCore() {
   try {
     const rep = await keepTwoRepliesWork();
     const prefix = t("commands.notifications.cleanAllRepliesPrefix");
+    const colon = t("units.colon");
     if (rep.found === 0) {
-      parts.push(prefix + ": 0");
+      parts.push(prefix + colon + "0");
     } else if (rep.cleaned) {
-      parts.push(`${prefix}: ${rep.found} → 2`);
+      const repSizeText = rep.savedBytes ? formatFileSize(rep.savedBytes) : "";
+      parts.push(
+        repSizeText
+          ? `${prefix}${colon}${rep.found} → 2 (${repSizeText})`
+          : `${prefix}${colon}${rep.found} → 2`
+      );
+      totalBytes += rep.savedBytes || 0;
     } else {
-      parts.push(`${prefix}: ${rep.found}`);
+      parts.push(`${prefix}${colon}${rep.found}`);
     }
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
   }
 
-  return t("commands.notifications.cleanAllDone", { details: parts.join(" | ") });
+  const totalText =
+    totalBytes > 0
+      ? t("commands.notifications.cleanAllTotal", { size: formatFileSize(totalBytes) })
+      : "";
+
+  return t("commands.notifications.cleanAllDone", { details: parts.join(" | "), total: totalText });
 }
 
 // Register all commands with Office.

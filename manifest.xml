@@ -215,9 +215,9 @@
           <bt:Override Locale="fr-fr" Value="Menu d'actions directes MailLighter."/>
           <bt:Override Locale="es-es" Value="Men&#250; de acciones directas MailLighter."/>
         </bt:String>
-        <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current email.">
-          <bt:Override Locale="fr-fr" Value="Supprime les images du mail courant."/>
-          <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del correo actual."/>
+        <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current draft.">
+          <bt:Override Locale="fr-fr" Value="Supprime les images du brouillon courant."/>
+          <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del borrador actual."/>
         </bt:String>
         <bt:String id="RemoveAttachments.Tooltip" DefaultValue="Remove attachments from the current draft.">
           <bt:Override Locale="fr-fr" Value="Supprime les pi&#232;ces jointes du brouillon courant."/>
@@ -407,9 +407,9 @@
             <bt:Override Locale="fr-fr" Value="Menu d'actions directes MailLighter."/>
             <bt:Override Locale="es-es" Value="Men&#250; de acciones directas MailLighter."/>
           </bt:String>
-          <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current email.">
-            <bt:Override Locale="fr-fr" Value="Supprime les images du mail courant."/>
-            <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del correo actual."/>
+          <bt:String id="RemoveImages.Tooltip" DefaultValue="Remove images from the current draft.">
+            <bt:Override Locale="fr-fr" Value="Supprime les images du brouillon courant."/>
+            <bt:Override Locale="es-es" Value="Elimina las im&#225;genes del borrador actual."/>
           </bt:String>
           <bt:String id="RemoveAttachments.Tooltip" DefaultValue="Remove attachments from the current draft.">
             <bt:Override Locale="fr-fr" Value="Supprime les pi&#232;ces jointes du brouillon courant."/>
