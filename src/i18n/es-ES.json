@@ -24,7 +24,9 @@
       "repliesNone": "ℹ️ No hay respuestas para limpiar",
       "repliesNoChange": "ℹ️ {count} respuesta(s) detectada(s), no se necesita limpieza",
       "repliesCleaned": "✅ {count} respuesta(s) detectada(s) — se conservaron las 2 más recientes",
-      "cleanAllDone": "✅ Limpieza completa finalizada — {details}",
+      "repliesCleanedWithSize": "✅ {count} respuesta(s) detectada(s) — se conservaron las 2 más recientes ({size} ahorrados)",
+      "cleanAllDone": "✅ Limpieza completa finalizada — {details}{total}",
+      "cleanAllTotal": " | Total ahorrado: {size}",
       "cleanAllImagesPrefix": "Imágenes",
       "cleanAllAttachmentsPrefix": "Adjuntos",
       "cleanAllRepliesPrefix": "Respuestas",
@@ -40,6 +42,7 @@
     "kilobytes": "KB",
     "megabytes": "MB",
     "gigabytes": "GB",
-    "lessThanOne": "< 1 KB"
+    "lessThanOne": "< 1 KB",
+    "colon": ": "
   }
 }

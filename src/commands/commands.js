@@ -20,10 +20,6 @@ function notify(message, icon = "Icon.80x80") {
     return;
   }
 
-  if (typeof item.notificationMessages.removeAsync === "function") {
-    item.notificationMessages.removeAsync("ActionPerformanceNotification");
-  }
-
   item.notificationMessages.replaceAsync("MailLighterNotification", {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     message,
@@ -248,7 +244,7 @@ async function keepSelectionOnlyCore() {
     const newBody = userArea + separator + selectedHtml;
     await setBodyAsync(newBody, Office.CoercionType.Html);
   } else {
-    const parts = ['<div><br></div>', separator, selectedHtml];
+    const parts = ["<div><br></div>", separator, selectedHtml];
     await setBodyAsync(parts.join(""), Office.CoercionType.Html);
   }
 
@@ -256,7 +252,7 @@ async function keepSelectionOnlyCore() {
   //    Works in Old Outlook. In New Outlook the cursor stays at the bottom
   //    (known Office.js API limitation).
   try {
-    await prependAsync('<div><br></div>', Office.CoercionType.Html);
+    await prependAsync("<div><br></div>", Office.CoercionType.Html);
   } catch {
     // prependAsync not available in this client
   }
@@ -269,14 +265,14 @@ async function removeImagesWork() {
   const imgMatches = htmlBody.match(/<img[^>]*>/gi) || [];
 
   if (imgMatches.length === 0) {
-    return { count: 0, sizeText: "" };
+    return { count: 0, sizeText: "", totalBytes: 0 };
   }
 
   const cleanedHtml = htmlBody.replace(/<img[^>]*>/gi, "");
   await setBodyAsync(cleanedHtml, Office.CoercionType.Html);
 
-  const totalSize = calculateImageSize(imgMatches);
-  return { count: imgMatches.length, sizeText: formatFileSize(totalSize) };
+  const totalBytes = calculateImageSize(imgMatches);
+  return { count: imgMatches.length, sizeText: formatFileSize(totalBytes), totalBytes };
 }
 
 async function removeImagesCore() {
@@ -307,7 +303,7 @@ async function removeAttachmentsWork() {
 
   await Promise.all(attachments.map((attachment) => removeAttachmentAsync(attachment.id)));
 
-  return { count: attachments.length, sizeText: formatFileSize(totalSize) };
+  return { count: attachments.length, sizeText: formatFileSize(totalSize), totalBytes: totalSize };
 }
 
 async function removeAttachmentsCore() {
@@ -353,12 +349,13 @@ async function keepTwoRepliesWork() {
     }
   }
 
+  const savedBytes = htmlBody.length - cutPoint;
   await setBodyAsync(htmlBody.substring(0, cutPoint), Office.CoercionType.Html);
-  return { found: separators.length, cleaned: true };
+  return { found: separators.length, cleaned: true, savedBytes };
 }
 
 async function keepTwoRepliesCore() {
-  const { found, cleaned } = await keepTwoRepliesWork();
+  const { found, cleaned, savedBytes } = await keepTwoRepliesWork();
 
   if (found === 0) {
     return t("commands.notifications.repliesNone");
@@ -368,27 +365,42 @@ async function keepTwoRepliesCore() {
     return t("commands.notifications.repliesNoChange", { count: found });
   }
 
-  return t("commands.notifications.repliesCleaned", { count: found });
+  const sizeText = savedBytes ? formatFileSize(savedBytes) : "";
+  return sizeText
+    ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
+    : t("commands.notifications.repliesCleaned", { count: found });
 }
 
 function formatCleanAllPart(prefix, count, sizeText) {
-  if (!count) return prefix + ": 0";
-  return sizeText ? `${prefix}: ${count} (${sizeText})` : `${prefix}: ${count}`;
+  const colon = t("units.colon");
+  if (!count) return prefix + colon + "0";
+  return sizeText ? `${prefix}${colon}${count} (${sizeText})` : `${prefix}${colon}${count}`;
 }
 
 async function cleanAllCore() {
   const parts = [];
+  let totalBytes = 0;
 
   try {
     const img = await removeImagesWork();
-    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText));
+    parts.push(
+      formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText)
+    );
+    totalBytes += img.totalBytes || 0;
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
   }
 
   try {
     const att = await removeAttachmentsWork();
-    parts.push(formatCleanAllPart(t("commands.notifications.cleanAllAttachmentsPrefix"), att.count, att.sizeText));
+    parts.push(
+      formatCleanAllPart(
+        t("commands.notifications.cleanAllAttachmentsPrefix"),
+        att.count,
+        att.sizeText
+      )
+    );
+    totalBytes += att.totalBytes || 0;
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
   }
@@ -396,18 +408,30 @@ async function cleanAllCore() {
   try {
     const rep = await keepTwoRepliesWork();
     const prefix = t("commands.notifications.cleanAllRepliesPrefix");
+    const colon = t("units.colon");
     if (rep.found === 0) {
-      parts.push(prefix + ": 0");
+      parts.push(prefix + colon + "0");
     } else if (rep.cleaned) {
-      parts.push(`${prefix}: ${rep.found} → 2`);
+      const repSizeText = rep.savedBytes ? formatFileSize(rep.savedBytes) : "";
+      parts.push(
+        repSizeText
+          ? `${prefix}${colon}${rep.found} → 2 (${repSizeText})`
+          : `${prefix}${colon}${rep.found} → 2`
+      );
+      totalBytes += rep.savedBytes || 0;
     } else {
-      parts.push(`${prefix}: ${rep.found}`);
+      parts.push(`${prefix}${colon}${rep.found}`);
     }
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
   }
 
-  return t("commands.notifications.cleanAllDone", { details: parts.join(" | ") });
+  const totalText =
+    totalBytes > 0
+      ? t("commands.notifications.cleanAllTotal", { size: formatFileSize(totalBytes) })
+      : "";
+
+  return t("commands.notifications.cleanAllDone", { details: parts.join(" | "), total: totalText });
 }
 
 // Register all commands with Office.
