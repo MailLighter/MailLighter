@@ -24,7 +24,9 @@
       "repliesNone": "ℹ️ No replies to clean",
       "repliesNoChange": "ℹ️ {count} reply(ies) detected, no cleanup needed",
       "repliesCleaned": "✅ {count} reply(ies) detected — kept latest 2",
-      "cleanAllDone": "✅ Full cleanup completed — {details}",
+      "repliesCleanedWithSize": "✅ {count} reply(ies) detected — kept latest 2 ({size} saved)",
+      "cleanAllDone": "✅ Full cleanup completed — {details}{total}",
+      "cleanAllTotal": " | Total saved: {size}",
       "cleanAllImagesPrefix": "Images",
       "cleanAllAttachmentsPrefix": "Attachments",
       "cleanAllRepliesPrefix": "Replies",
@@ -40,6 +42,7 @@
     "kilobytes": "KB",
     "megabytes": "MB",
     "gigabytes": "GB",
-    "lessThanOne": "< 1 KB"
+    "lessThanOne": "< 1 KB",
+    "colon": ": "
   }
 }
