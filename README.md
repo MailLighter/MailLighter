@@ -8,6 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Outlook_Desktop-0078D4?logo=microsoftoutlook" alt="Outlook Desktop">
+  <img src="https://img.shields.io/badge/platform-Outlook_Web-0078D4?logo=microsoftoutlook" alt="Outlook Web">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
   <img src="https://img.shields.io/badge/i18n-EN_|_FR_|_ES-blue" alt="Languages">
 </p>
@@ -35,10 +36,10 @@ All actions are available in **compose mode** from the Outlook ribbon dropdown:
 The full cleanup action provides a detailed report showing what was done:
 
 ```
-✅ Full cleanup completed — Images: 3 (150 KB) | Attachments: 2 (1.2 MB) | Replies: 5 → 2
+✅ Full cleanup completed — Images: 3 (150 KB) | Attachments: 2 (252.4 KB) | Replies: 2 | Total saved: 402.4 KB
 ```
 
-Each category shows the count of items processed, the space saved when applicable, and for replies the reduction (e.g. 5 → 2).
+Each category shows the count of items processed, the space saved when applicable, and for replies the reduction (e.g. 5 → 2). A total space saved is shown at the end when applicable.
 
 ## How it works
 
@@ -69,10 +70,26 @@ Both the ribbon labels and in-app notifications are localized.
 - **Office.js** — Outlook add-in APIs
 - **webpack 5** — build & bundling
 - **HTML/CSS** — no UI framework
+- **Jest** — unit tests
+- **GitHub Actions** — CI (tests, lint, build)
 
 ## Installation
 
-> *Coming soon*
+### For end users
+
+MailLighter will be available on Microsoft AppSource soon.  
+Visit [maillighter.com](https://www.maillighter.com) for updates.
+
+### For developers
+
+1. Clone the repository and install dependencies: `npm install`
+2. Build the project: `npm run build`
+3. Start the local dev server: `npm run dev-server`
+4. Sideload `manifest.xml` in Outlook:
+   - **Desktop**: File → Manage Add-ins → Upload a custom add-in → `manifest.xml`
+   - **Web**: Settings → Manage add-ins → Upload → `manifest.xml`
+
+> Requires a Microsoft 365 account with add-in sideloading permissions.
 
 ## License
 
