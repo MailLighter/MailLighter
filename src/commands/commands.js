@@ -8,6 +8,7 @@
 import { t } from "../shared/i18n";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
 import { findReplySeparators } from "../shared/reply-detection";
+import { addSavings, getSavings } from "../shared/savings-storage";
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -292,11 +293,13 @@ async function removeImagesWork() {
 }
 
 async function removeImagesCore() {
-  const { count, sizeText } = await removeImagesWork();
+  const { count, sizeText, totalBytes } = await removeImagesWork();
 
   if (count === 0) {
     return t("commands.notifications.imagesNone");
   }
+
+  addSavings("images", totalBytes);
 
   return sizeText
     ? t("commands.notifications.imagesRemovedWithSize", { count, size: sizeText })
@@ -323,11 +326,13 @@ async function removeAttachmentsWork() {
 }
 
 async function removeAttachmentsCore() {
-  const { count, sizeText } = await removeAttachmentsWork();
+  const { count, sizeText, totalBytes } = await removeAttachmentsWork();
 
   if (count === 0) {
     return t("commands.notifications.attachmentsNone");
   }
+
+  addSavings("attachments", totalBytes);
 
   return sizeText
     ? t("commands.notifications.attachmentsRemovedWithSize", { count, size: sizeText })
@@ -394,6 +399,8 @@ async function keepTwoRepliesCore() {
     await appendEcoMessage();
   }
 
+  addSavings("replies", savedBytes);
+
   const sizeText = savedBytes ? formatFileSize(savedBytes) : "";
   return sizeText
     ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
@@ -416,6 +423,7 @@ async function cleanAllCore() {
       formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText)
     );
     totalBytes += img.totalBytes || 0;
+    addSavings("images", img.totalBytes || 0);
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
   }
@@ -430,6 +438,7 @@ async function cleanAllCore() {
       )
     );
     totalBytes += att.totalBytes || 0;
+    addSavings("attachments", att.totalBytes || 0);
   } catch (error) {
     parts.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
   }
@@ -448,6 +457,7 @@ async function cleanAllCore() {
           : `${prefix}${colon}${rep.found} → 2`
       );
       totalBytes += rep.savedBytes || 0;
+      addSavings("replies", rep.savedBytes || 0);
       if (isEcoMessageEnabled()) {
         await appendEcoMessage();
       }
@@ -468,7 +478,15 @@ async function cleanAllCore() {
 
 function openSettingsCore(event) {
   const ecoEnabled = isEcoMessageEnabled();
-  const settingsUrl = `${window.location.origin}/settings.html?ecoMessage=${ecoEnabled ? "1" : "0"}`;
+  const savings = getSavings();
+  const params = new URLSearchParams({
+    ecoMessage: ecoEnabled ? "1" : "0",
+    savImages: savings.images,
+    savReplies: savings.replies,
+    savAttachments: savings.attachments,
+    savTotal: savings.total,
+  });
+  const settingsUrl = `${window.location.origin}/settings.html?${params}`;
 
   Office.context.ui.displayDialogAsync(settingsUrl, { height: 50, width: 40 }, (result) => {
     event.completed();
