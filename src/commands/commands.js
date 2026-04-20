@@ -22,9 +22,9 @@ function isEcoMessageEnabled() {
 async function appendEcoMessage() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
   const ecoHtml =
-    `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #e0e0e0;color:#555;font-size:13px;">` +
+    `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
     `--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de ` +
-    `<a href="https://www.maillighter.com">MailLighter</a>, mais il peut être fourni si besoin ` +
+    `<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin ` +
     `(moins d'informations envoyées = moins de données à stocker)</div>`;
   await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
 }
