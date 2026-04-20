@@ -20,6 +20,7 @@ module.exports = async (env, options) => {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       commands: "./src/commands/commands.js",
       "dev-viewer": "./src/taskpane/dev-viewer.js",
+      settings: "./src/settings/settings.js",
     },
     output: {
       clean: true,
@@ -79,6 +80,11 @@ module.exports = async (env, options) => {
         filename: "dev-viewer.html",
         template: "./src/taskpane/dev-viewer.html",
         chunks: ["polyfill", "dev-viewer"],
+      }),
+      new HtmlWebpackPlugin({
+        filename: "settings.html",
+        template: "./src/settings/settings.html",
+        chunks: ["polyfill", "settings"],
       }),
     ],
     devServer: {
