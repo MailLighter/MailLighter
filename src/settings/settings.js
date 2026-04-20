@@ -1,4 +1,4 @@
-/* global Office */
+/* global Office, document, window, URLSearchParams */
 
 import { t } from "../shared/i18n";
 
@@ -26,7 +26,9 @@ Office.onReady(() => {
   // Apply i18n text
   document.getElementById("settingsTitle").textContent = `⚙️ ${t("settings.title")}`;
   document.getElementById("ecoMessageTitle").textContent = t("settings.ecoMessageTitle");
-  document.getElementById("ecoMessageDescription").textContent = t("settings.ecoMessageDescription");
+  document.getElementById("ecoMessageDescription").textContent = t(
+    "settings.ecoMessageDescription"
+  );
   document.getElementById("previewLabel").textContent = t("settings.previewLabel");
   document.getElementById("savingsTitle").textContent = `📊 ${t("settings.savingsTitle")}`;
   document.getElementById("savingsImagesLabel").textContent = t("settings.savingsImages");

@@ -3,7 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office, console */
+/* global Office, console, localStorage, window, URLSearchParams */
 
 import { t } from "../shared/i18n";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
