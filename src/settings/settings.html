@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Office JavaScript API -->
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      color: #323130;
+      background: #ffffff;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0078d4;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #edebe9;
+    }
+
+    .setting-item {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .setting-label input[type="checkbox"] {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: #0078d4;
+    }
+
+    .setting-text {
+      flex: 1;
+    }
+
+    .setting-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .setting-description {
+      color: #605e5c;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .eco-preview {
+      display: none;
+      margin-top: 10px;
+      margin-left: 26px;
+      padding: 10px 14px;
+      background: #f1f8f1;
+      border-left: 3px solid #2e7d32;
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      color: #2e7d32;
+      line-height: 1.5;
+    }
+
+    .eco-preview.visible {
+      display: block;
+    }
+
+    .eco-preview a {
+      color: #0078d4;
+      text-decoration: none;
+    }
+
+    .eco-preview a:hover {
+      text-decoration: underline;
+    }
+
+    .preview-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #a19f9d;
+      margin-bottom: 6px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid #edebe9;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    button {
+      padding: 8px 20px;
+      background: #0078d4;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: background 0.1s;
+    }
+
+    button:hover {
+      background: #106ebe;
+    }
+
+    button:active {
+      background: #005a9e;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="settingsTitle">⚙️ Paramètres MailLighter</h1>
+
+  <div class="setting-item">
+    <label class="setting-label">
+      <input type="checkbox" id="ecoMessageCheckbox" />
+      <div class="setting-text">
+        <div class="setting-title" id="ecoMessageTitle">Message écologique</div>
+        <div class="setting-description" id="ecoMessageDescription">
+          Ajoute automatiquement un message à la fin de l'email quand l'historique des réponses est supprimé.
+        </div>
+      </div>
+    </label>
+
+    <div class="eco-preview" id="ecoPreview">
+      <div class="preview-label" id="previewLabel">Aperçu du message</div>
+      <span id="ecoPreviewText">--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de <a href="https://www.maillighter.com" target="_blank" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin (moins d'informations envoyées = moins de données à stocker)</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button id="closeButton">Fermer</button>
+  </div>
+</body>
+
+</html>
