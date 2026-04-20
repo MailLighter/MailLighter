@@ -14,9 +14,9 @@
   </Description>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
-  <SupportUrl DefaultValue="https://www.maillighter.com/help"/>
+  <SupportUrl DefaultValue="https://maillighter.com/docs/"/>
   <AppDomains>
-    <AppDomain>https://www.maillighter.com</AppDomain>
+    <AppDomain>https://maillighter.com</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Mailbox"/>
@@ -150,6 +150,21 @@
                     </Item>
                   </Items>
                 </Control>
+                <Control xsi:type="Button" id="msgComposeDevViewer">
+                  <Label resid="DevViewer.Label"/>
+                  <Supertip>
+                    <Title resid="DevViewer.Label"/>
+                    <Description resid="DevViewer.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="DevViewer.Url"/>
+                  </Action>
+                </Control>
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -179,6 +194,7 @@
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
+        <bt:Url id="DevViewer.Url" DefaultValue="https://localhost:3000/dev-viewer.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="Quick Actions">
@@ -209,6 +225,7 @@
           <bt:Override Locale="fr-fr" Value="Ne garder que la s&#233;lection"/>
           <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
         </bt:String>
+        <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="MenuButton.Tooltip" DefaultValue="MailLighter quick actions menu.">
@@ -235,6 +252,7 @@
           <bt:Override Locale="fr-fr" Value="Remplace le contenu du mail par la s&#233;lection uniquement."/>
           <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
         </bt:String>
+        <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
       </bt:LongStrings>
     </Resources>
 
@@ -342,6 +360,21 @@
                       </Item>
                     </Items>
                   </Control>
+                  <Control xsi:type="Button" id="msgComposeDevViewer2">
+                    <Label resid="DevViewer.Label"/>
+                    <Supertip>
+                      <Title resid="DevViewer.Label"/>
+                      <Description resid="DevViewer.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="DevViewer.Url"/>
+                    </Action>
+                  </Control>
                 </Group>
               </OfficeTab>
             </ExtensionPoint>
@@ -371,6 +404,7 @@
         </bt:Images>
         <bt:Urls>
           <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
+          <bt:Url id="DevViewer.Url" DefaultValue="https://localhost:3000/dev-viewer.html"/>
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel" DefaultValue="Quick Actions">
@@ -401,6 +435,7 @@
             <bt:Override Locale="fr-fr" Value="Ne garder que la s&#233;lection"/>
             <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
           </bt:String>
+          <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
         </bt:ShortStrings>
         <bt:LongStrings>
           <bt:String id="MenuButton.Tooltip" DefaultValue="MailLighter quick actions menu.">
@@ -427,6 +462,7 @@
             <bt:Override Locale="fr-fr" Value="Remplace le contenu du mail par la s&#233;lection uniquement."/>
             <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
           </bt:String>
+          <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
         </bt:LongStrings>
       </Resources>
     </VersionOverrides>

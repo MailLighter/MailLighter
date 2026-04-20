@@ -217,6 +217,10 @@ Lis dans cet ordre :
 6. `src/shared/i18n.js`
 7. `src/i18n/*.json`
 
+## Consignes de modification
+
+Rechercher dans le code source avant de modifier. Ne jamais changer du code que vous n'avez pas lu.
+
 ## Résumé opérationnel
 
 Projet Outlook add-in JavaScript orienté actions rapides sur le contenu d'email.

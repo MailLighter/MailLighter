@@ -1,79 +1,9 @@
-# MailLighter — Éléments de langage Microsoft AppSource
+Short description
+(100 caractères max — affiché dans les résultats de recherche)
 
----
+Clean your emails in one click — remove images, attachments, and old replies before you send.
+Lighten your emails. Lighten your impact.
 
-## Nom de l'application
-
-**MailLighter – Email Cleaner for Outlook**
-
----
-
-## Description courte *(100 caractères max)*
-
-### Français
-> Allégez vos emails en un clic. Supprimez images, pièces jointes et réponses citées avant d'envoyer.
-
-### English
-> Clean your emails in one click. Remove images, attachments, and quoted replies before sending.
-
----
-
-## Description longue
-
-### Français *(langue principale)*
-
-**MailLighter** vous permet d'envoyer des emails plus légers et plus propres, directement depuis Outlook.
-
-En un clic depuis le ruban, MailLighter supprime le superflu qui s'accumule dans vos fils de discussion : images intégrées, pièces jointes, couches de réponses citées. Vos destinataires ne reçoivent que l'essentiel.
-
----
-
-**Pourquoi MailLighter ?**
-
-À chaque fois que vous répondez à un long fil de discussion, Outlook emporte avec lui tout ce qui précède : signatures citées, logos intégrés, fichiers déjà partagés, réponses empilées depuis des semaines. MailLighter vous donne des contrôles rapides et ciblés pour supprimer exactement les informations dont vous n'avez plus besoin, avant d'envoyer.
-
-Mais au-delà du confort, les emails lourds ont un vrai coût environnemental. Chaque mégaoctet envoyé transite par des datacenters, est stocké sur des serveurs et répliqué dans des systèmes de sauvegarde ; tout cela consomme de l'électricité et des matières premières. Un seul email avec une pièce jointe volumineuse, transféré à une équipe et conservé dans des dizaines de boîtes mail, génère discrètement une empreinte carbone réelle. Multipliez cela par des milliers d'emails par jour à l'échelle d'une organisation, et l'impact devient significatif.
-
-MailLighter aide à réduire cette empreinte à la source, avant d'appuyer sur Envoyer. Des emails plus légers, c'est moins de stockage sur les serveurs de messagerie, moins de bande passante utilisée en transit, et moins d'énergie dépensée pour maintenir ces données en vie dans les datacenters. Une petite habitude qui, à l'échelle globale, contribue à diminuer grandement l'impact numérique.
-
----
-
-**Ce que vous pouvez faire :**
-
-🖼️ **Supprimer les images**
-Retire toutes les images intégrées au corps du message. MailLighter vous indique combien d'images ont été supprimées et combien d'espace a été libéré.
-
-📎 **Supprimer les pièces jointes**
-Supprime les pièces jointes à votre message. Seuls les vrais fichiers sont supprimé ; les images en ligne utilisées comme signatures ou logos ne sont pas touchées à cette étape.
-
-↩️ **Garder 2 réponses**
-Réduit un long fil de discussion aux 2 plus récents messages. Fonctionne sur tous les formats Outlook et dans plusieurs langues. MailLighter détecte intelligemment les blocs cités qu'ils utilisent le formatage standard d'Outlook, des séparateurs à bordure, des règles horizontales ou des en-têtes en texte brut.
-
-✂️ **Garder la sélection**
-Vous avez sélectionné un passage dans le corps de l'email ? Remplacez l'intégralité du fil cité par cette seule sélection. Idéal pour ne conserver qu'un extrait précis.
-
-✅ **Nettoyage complet**
-Lance toutes les actions en une seule fois ; suppression des images, des pièces jointes et réduction du fil de discussion. Un résumé s'affiche pour indiquer exactement ce qui a été supprimé et l'espace de stockage économisé.
-
----
-
-**Avantages clés :**
-
-- **Rapide** : toutes les actions disponibles dans un seul menu déroulant ajouté au ruban Outlook
-- **Transparent** : chaque action indique ce qui a été supprimé et l'espace de stockage économisé (Ko, Mo ou Go)
-- **Non destructif** : seul le brouillon en cours est modifié ; les emails originaux dans votre boîte de réception ne sont jamais touchés
-- **Multilingue** : prise en charge complète du français, de l'anglais et de l'espagnol
-- **Respect de la vie privée et du RGDP** : tout le traitement s'effectue localement dans Outlook ; aucune donnée n'est envoyée à des serveurs externes
-- **Eco-responsable** : réduisez votre empreinte numérique en envoyant des emails plus légers
-
----
-
-**Configuration requise :**
-
-- Microsoft Outlook pour Windows ou macOS (version bureau)
-- Compte Microsoft 365 ou Exchange
-
----
 
 ### English
 
