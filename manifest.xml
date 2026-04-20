@@ -148,6 +148,21 @@
                         <FunctionName>cleanAllCommand</FunctionName>
                       </Action>
                     </Item>
+                    <Item id="msgComposeSettingsItem">
+                      <Label resid="Settings.Label"/>
+                      <Supertip>
+                        <Title resid="Settings.Label"/>
+                        <Description resid="Settings.Tooltip"/>
+                      </Supertip>
+                      <Icon>
+                        <bt:Image size="16" resid="Icon.16x16"/>
+                        <bt:Image size="32" resid="Icon.32x32"/>
+                        <bt:Image size="80" resid="Icon.80x80"/>
+                      </Icon>
+                      <Action xsi:type="ExecuteFunction">
+                        <FunctionName>openSettingsCommand</FunctionName>
+                      </Action>
+                    </Item>
                   </Items>
                 </Control>
                 <Control xsi:type="Button" id="msgComposeDevViewer">
@@ -225,7 +240,11 @@
           <bt:Override Locale="fr-fr" Value="Ne garder que la s&#233;lection"/>
           <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
         </bt:String>
-        <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
+<bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
+        <bt:String id="Settings.Label" DefaultValue="Settings">
+          <bt:Override Locale="fr-fr" Value="Param&#232;tres"/>
+          <bt:Override Locale="es-es" Value="Configuraci&#243;n"/>
+        </bt:String>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="MenuButton.Tooltip" DefaultValue="MailLighter quick actions menu.">
@@ -252,7 +271,11 @@
           <bt:Override Locale="fr-fr" Value="Remplace le contenu du mail par la s&#233;lection uniquement."/>
           <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
         </bt:String>
-        <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
+<bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
+        <bt:String id="Settings.Tooltip" DefaultValue="Configure MailLighter settings.">
+          <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
+          <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
+        </bt:String>
       </bt:LongStrings>
     </Resources>
 
@@ -358,6 +381,21 @@
                           <FunctionName>cleanAllCommand</FunctionName>
                         </Action>
                       </Item>
+                      <Item id="msgComposeSettingsItem2">
+                        <Label resid="Settings.Label"/>
+                        <Supertip>
+                          <Title resid="Settings.Label"/>
+                          <Description resid="Settings.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="Icon.16x16"/>
+                          <bt:Image size="32" resid="Icon.32x32"/>
+                          <bt:Image size="80" resid="Icon.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>openSettingsCommand</FunctionName>
+                        </Action>
+                      </Item>
                     </Items>
                   </Control>
                   <Control xsi:type="Button" id="msgComposeDevViewer2">
@@ -436,6 +474,10 @@
             <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
           </bt:String>
           <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
+          <bt:String id="Settings.Label" DefaultValue="Settings">
+            <bt:Override Locale="fr-fr" Value="Param&#232;tres"/>
+            <bt:Override Locale="es-es" Value="Configuraci&#243;n"/>
+          </bt:String>
         </bt:ShortStrings>
         <bt:LongStrings>
           <bt:String id="MenuButton.Tooltip" DefaultValue="MailLighter quick actions menu.">
@@ -463,6 +505,10 @@
             <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
           </bt:String>
           <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
+          <bt:String id="Settings.Tooltip" DefaultValue="Configure MailLighter settings.">
+            <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
+            <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
+          </bt:String>
         </bt:LongStrings>
       </Resources>
     </VersionOverrides>

@@ -35,8 +35,16 @@
       "cannotKeepReplies": "❌ Impossible de conserver 2 réponses",
       "cannotCleanAll": "❌ Impossible d'exécuter le nettoyage complet",
       "keepSelectionDone": "✅ Contenu remplacé par la sélection uniquement.",
-      "cannotKeepSelection": "❌ Impossible de ne garder que la sélection."
+      "cannotKeepSelection": "❌ Impossible de ne garder que la sélection.",
+      "cannotOpenSettings": "❌ Impossible d'ouvrir les paramètres"
     }
+  },
+  "settings": {
+    "title": "Paramètres MailLighter",
+    "ecoMessageTitle": "Message écologique",
+    "ecoMessageDescription": "Ajoute automatiquement un message quand l'historique des réponses est supprimé.",
+    "previewLabel": "Aperçu du message",
+    "close": "Fermer"
   },
   "units": {
     "kilobytes": "Ko",

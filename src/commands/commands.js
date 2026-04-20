@@ -13,6 +13,22 @@ Office.onReady(() => {
   // If needed, Office.js is ready to be called.
 });
 
+const ECO_MESSAGE_KEY = "maillighter_eco_message";
+
+function isEcoMessageEnabled() {
+  return localStorage.getItem(ECO_MESSAGE_KEY) === "1";
+}
+
+async function appendEcoMessage() {
+  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
+  const ecoHtml =
+    `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
+    `--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de ` +
+    `<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin ` +
+    `(moins d'informations envoyées = moins de données à stocker)</div>`;
+  await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
+}
+
 function notify(message, icon = "Icon.80x80") {
   const item = Office.context.mailbox.item;
 
@@ -374,6 +390,10 @@ async function keepTwoRepliesCore() {
     return t("commands.notifications.repliesNoChange", { count: found });
   }
 
+  if (isEcoMessageEnabled()) {
+    await appendEcoMessage();
+  }
+
   const sizeText = savedBytes ? formatFileSize(savedBytes) : "";
   return sizeText
     ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
@@ -428,6 +448,9 @@ async function cleanAllCore() {
           : `${prefix}${colon}${rep.found} → 2`
       );
       totalBytes += rep.savedBytes || 0;
+      if (isEcoMessageEnabled()) {
+        await appendEcoMessage();
+      }
     } else {
       parts.push(`${prefix}${colon}${rep.found}`);
     }
@@ -443,6 +466,38 @@ async function cleanAllCore() {
   return t("commands.notifications.cleanAllDone", { details: parts.join(" | "), total: totalText });
 }
 
+function openSettingsCore(event) {
+  const ecoEnabled = isEcoMessageEnabled();
+  const settingsUrl = `${window.location.origin}/settings.html?ecoMessage=${ecoEnabled ? "1" : "0"}`;
+
+  Office.context.ui.displayDialogAsync(settingsUrl, { height: 50, width: 40 }, (result) => {
+    event.completed();
+
+    if (result.status === Office.AsyncResultStatus.Failed) {
+      notify(t("commands.notifications.cannotOpenSettings"));
+      return;
+    }
+
+    const dialog = result.value;
+
+    dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
+      try {
+        const data = JSON.parse(arg.message);
+        if (typeof data.ecoMessageEnabled !== "undefined") {
+          localStorage.setItem(ECO_MESSAGE_KEY, data.ecoMessageEnabled ? "1" : "0");
+        }
+        if (data.action === "close") {
+          dialog.close();
+        }
+      } catch {
+        // ignore malformed messages
+      }
+    });
+
+    dialog.addEventHandler(Office.EventType.DialogEventReceived, () => {});
+  });
+}
+
 // Register all commands with Office.
 [
   ["removeImagesCommand", removeImagesCore, "cannotRemoveImages"],
@@ -455,3 +510,5 @@ async function cleanAllCore() {
     executeWithNotification(event, core, t(`commands.notifications.${errorKey}`));
   });
 });
+
+Office.actions.associate("openSettingsCommand", openSettingsCore);
