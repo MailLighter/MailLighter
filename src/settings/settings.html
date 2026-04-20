@@ -132,6 +132,74 @@
     button:active {
       background: #005a9e;
     }
+
+    .savings-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #edebe9;
+    }
+
+    .savings-section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #323130;
+      margin-bottom: 14px;
+    }
+
+    .savings-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .savings-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #605e5c;
+    }
+
+    .savings-row-icon {
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .savings-row-label {
+      flex: 1;
+    }
+
+    .savings-row-value {
+      font-weight: 600;
+      color: #323130;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .savings-total-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f1f8f1;
+      border: 1px solid #c8e6c9;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+
+    .savings-total-label {
+      font-weight: 600;
+      color: #2e7d32;
+      font-size: 13px;
+    }
+
+    .savings-total-value {
+      font-weight: 700;
+      color: #2e7d32;
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -152,6 +220,31 @@
     <div class="eco-preview" id="ecoPreview">
       <div class="preview-label" id="previewLabel">Aperçu du message</div>
       <span id="ecoPreviewText">--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de <a href="https://www.maillighter.com" target="_blank" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin (moins d'informations envoyées = moins de données à stocker)</span>
+    </div>
+  </div>
+
+  <div class="savings-section">
+    <h2 id="savingsTitle">📊 Mes économies</h2>
+    <div class="savings-rows">
+      <div class="savings-row">
+        <span class="savings-row-icon">🖼</span>
+        <span class="savings-row-label" id="savingsImagesLabel">Images</span>
+        <span class="savings-row-value" id="savingsImages">—</span>
+      </div>
+      <div class="savings-row">
+        <span class="savings-row-icon">💬</span>
+        <span class="savings-row-label" id="savingsRepliesLabel">Réponses</span>
+        <span class="savings-row-value" id="savingsReplies">—</span>
+      </div>
+      <div class="savings-row">
+        <span class="savings-row-icon">📎</span>
+        <span class="savings-row-label" id="savingsAttachmentsLabel">Pièces jointes</span>
+        <span class="savings-row-value" id="savingsAttachments">—</span>
+      </div>
+    </div>
+    <div class="savings-total-box">
+      <span class="savings-total-label" id="savingsTotalLabel">Total économisé</span>
+      <span class="savings-total-value" id="savingsTotal">0</span>
     </div>
   </div>
 
