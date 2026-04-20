@@ -1,4 +1,4 @@
-/* global Office */
+/* global Office, document, navigator */
 
 import { findReplySeparators } from "../shared/reply-detection";
 
@@ -52,7 +52,11 @@ function showSeparators(html) {
     const excerpt = escapeHtml(before) + '<b style="color:#d83b01">|CUT|</b>' + escapeHtml(after);
     return (
       '<div class="sep-item">' +
-      '<div class="label">Separator ' + (i + 1) + " — position " + pos + "</div>" +
+      '<div class="label">Separator ' +
+      (i + 1) +
+      " — position " +
+      pos +
+      "</div>" +
       excerpt +
       "</div>"
     );
@@ -86,8 +90,12 @@ function copySeparators() {
         ta.style.opacity = "0";
         document.body.appendChild(ta);
         ta.select();
-        try { document.execCommand("copy"); setStatus("Separators copied! (fallback)"); }
-        catch { setStatus("Copy failed."); }
+        try {
+          document.execCommand("copy");
+          setStatus("Separators copied! (fallback)");
+        } catch {
+          setStatus("Copy failed.");
+        }
         document.body.removeChild(ta);
       });
   }

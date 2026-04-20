@@ -74,7 +74,8 @@ export function findTextSeparators(htmlBody) {
     // immediately precedes the header block, include it in the cut.
     if (lastUIdx < 0) {
       const dashWindow = htmlBody.substring(Math.max(0, cutPos - 400), cutPos);
-      const dashSepRe = /<[^>]+>\s*[-\u2010-\u2014]{3,}[\s\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[\s\xa0]*[-\u2010-\u2014]{3,}\s*<\/[^>]+>/g;
+      const dashSepRe =
+        /<[^>]+>\s*[-\u2010-\u2014]{3,}[\s\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[\s\xa0]*[-\u2010-\u2014]{3,}\s*<\/[^>]+>/g;
       let lastDIdx = -1;
       let lastDEnd = 0;
       let dTest;
@@ -146,7 +147,8 @@ export function findReplySeparators(htmlBody) {
   const wroteRegex = new RegExp(
     "\\b(a(?:\\s|<[^>]*>)+[eé]crit" +
       "|wrot?e|writes|escribi[oó]|escribe|schrieb|schreibt|geschreven|schrijft|scrisse|scrive)" +
-      ATTR_GAP + ":",
+      ATTR_GAP +
+      ":",
     "gi"
   );
   const wrotePositions = [];
@@ -171,7 +173,11 @@ export function findReplySeparators(htmlBody) {
     // because each blockquote level introduces a real reply boundary.
     const lineWindow = htmlBody.substring(Math.max(0, wroteMatch.index - 300), wroteMatch.index);
     const lineText = lineWindow.replace(/<[^>]*>/g, "\n");
-    const lastLine = lineText.split("\n").filter((l) => l.trim()).pop() || "";
+    const lastLine =
+      lineText
+        .split("\n")
+        .filter((l) => l.trim())
+        .pop() || "";
     if (/^[\s\xa0]*(?:(?:&gt;|>)[\s\xa0]*){2,}/.test(lastLine)) continue;
 
     const lookback = htmlBody.substring(Math.max(0, wroteMatch.index - 500), wroteMatch.index);
@@ -205,14 +211,21 @@ export function findReplySeparators(htmlBody) {
     //    the attribution-start pattern, even if not quoted.
     for (let bi = prevBlocks.length - 1; bi >= 0; bi--) {
       const pb = prevBlocks[bi];
-      const plainText = pb.text.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").replace(/&gt;/g, ">").trim();
+      const plainText = pb.text
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&gt;/g, ">")
+        .trim();
       const isQuoted = /^>/.test(plainText);
       const unquoted = plainText.replace(/^(?:>\s*)+/, "").trim();
-      const isAttribution = /^(?:On |Le |El |Am |Op |Il |\d{1,2}[\s/.\-])/.test(unquoted);
+      const isAttribution = /^(?:On |Le |El |Am |Op |Il |\d{1,2}[\s/.-])/.test(unquoted);
       const isImmediate = bi === prevBlocks.length - 1;
       if (isAttribution && (isQuoted || isImmediate)) {
         const candidatePos = attrLookStart + pb.index;
-        if (wrotePositions.length === 0 || candidatePos - wrotePositions[wrotePositions.length - 1] >= 200) {
+        if (
+          wrotePositions.length === 0 ||
+          candidatePos - wrotePositions[wrotePositions.length - 1] >= 200
+        ) {
           cutPos = candidatePos;
         }
         break;
@@ -294,9 +307,7 @@ export function findReplySeparators(htmlBody) {
       if (tp <= p || tp - p >= w) return false;
       // If another separator exists between the anchor and this textPosition,
       // the textPosition belongs to a different reply — keep it.
-      const hasIntermediate = allNonTextPositions.some(
-        (sp) => sp > p + 200 && sp < tp - 200
-      );
+      const hasIntermediate = allNonTextPositions.some((sp) => sp > p + 200 && sp < tp - 200);
       return !hasIntermediate;
     });
   });
