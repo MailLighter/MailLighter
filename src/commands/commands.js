@@ -331,21 +331,29 @@ async function keepTwoRepliesWork() {
   }
 
   let cutPoint = separators[2];
+  // Never move the cut earlier than the 2nd reply boundary — that content
+  // is part of the reply we want to keep.
+  const floor = separators[1];
   const before = htmlBody.substring(0, cutPoint);
 
   const lastHr = before.lastIndexOf("<hr");
-  if (lastHr >= 0 && cutPoint - lastHr < 500) {
+  if (lastHr >= 0 && cutPoint - lastHr < 500 && lastHr >= floor) {
     cutPoint = lastHr;
   } else {
-    let lastUnderscoreIdx = -1;
-    const underscoreRe = /_{10,}/g;
-    let m;
-    while ((m = underscoreRe.exec(before)) !== null) {
-      lastUnderscoreIdx = m.index;
+    // Detect "---separator text---" reply/forward headers (Outlook, all locales).
+    // e.g. "-----Message d'origine-----", "-----Original Message-----",
+    //      "---------- Message original ----------", "--- Forwarded message ---"
+    const dashSepRe = /[-\u2010-\u2014]{3,}[ \t\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[ \t\xa0]*[-\u2010-\u2014]{3,}/g;
+    let lastDashSepIdx = -1;
+    let dashMatch;
+    while ((dashMatch = dashSepRe.exec(before)) !== null) {
+      if (dashMatch.index >= floor) {
+        lastDashSepIdx = dashMatch.index;
+      }
     }
-    if (lastUnderscoreIdx >= 0 && cutPoint - lastUnderscoreIdx < 2000) {
-      const tagStart = before.lastIndexOf("<", lastUnderscoreIdx);
-      cutPoint = tagStart >= 0 ? tagStart : lastUnderscoreIdx;
+    if (lastDashSepIdx >= 0 && cutPoint - lastDashSepIdx < 1000) {
+      const tagStart = before.lastIndexOf("<", lastDashSepIdx);
+      cutPoint = tagStart >= 0 && tagStart >= floor ? tagStart : lastDashSepIdx;
     }
   }
 
