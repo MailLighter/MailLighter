@@ -44,6 +44,11 @@
     "ecoMessageTitle": "Message écologique",
     "ecoMessageDescription": "Ajoute automatiquement un message quand l'historique des réponses est supprimé.",
     "previewLabel": "Aperçu du message",
+    "savingsTitle": "Mes économies",
+    "savingsImages": "Images",
+    "savingsReplies": "Réponses",
+    "savingsAttachments": "Pièces jointes",
+    "savingsTotal": "Total économisé",
     "close": "Fermer"
   },
   "units": {
