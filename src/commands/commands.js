@@ -343,7 +343,8 @@ async function keepTwoRepliesWork() {
     // Detect "---separator text---" reply/forward headers (Outlook, all locales).
     // e.g. "-----Message d'origine-----", "-----Original Message-----",
     //      "---------- Message original ----------", "--- Forwarded message ---"
-    const dashSepRe = /[-\u2010-\u2014]{3,}[ \t\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[ \t\xa0]*[-\u2010-\u2014]{3,}/g;
+    const dashSepRe =
+      /[-\u2010-\u2014]{3,}[ \t\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[ \t\xa0]*[-\u2010-\u2014]{3,}/g;
     let lastDashSepIdx = -1;
     let dashMatch;
     while ((dashMatch = dashSepRe.exec(before)) !== null) {
