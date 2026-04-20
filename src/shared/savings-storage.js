@@ -1,3 +1,5 @@
+/* global localStorage */
+
 const KEYS = {
   images: "maillighter_savings_images",
   replies: "maillighter_savings_replies",
