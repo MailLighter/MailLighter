@@ -15,18 +15,26 @@ Office.onReady(() => {
 });
 
 const ECO_MESSAGE_KEY = "maillighter_eco_message";
+const ECO_MESSAGE_TEXT_KEY = "maillighter_eco_message_text";
 
 function isEcoMessageEnabled() {
   return localStorage.getItem(ECO_MESSAGE_KEY) === "1";
 }
 
+function getEcoMessageText() {
+  return localStorage.getItem(ECO_MESSAGE_TEXT_KEY) || t("settings.ecoMessageDefault");
+}
+
 async function appendEcoMessage() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
+  const rawText = getEcoMessageText();
+  const linkedText = rawText.replace(
+    /MailLighter/g,
+    '<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>'
+  );
   const ecoHtml =
     `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
-    `--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de ` +
-    `<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin ` +
-    `(moins d'informations envoyées = moins de données à stocker)</div>`;
+    `--<br>${linkedText}</div>`;
   await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
 }
 
@@ -481,6 +489,7 @@ function openSettingsCore(event) {
   const savings = getSavings();
   const params = new URLSearchParams({
     ecoMessage: ecoEnabled ? "1" : "0",
+    ecoText: getEcoMessageText(),
     savImages: savings.images,
     savReplies: savings.replies,
     savAttachments: savings.attachments,
@@ -488,7 +497,7 @@ function openSettingsCore(event) {
   });
   const settingsUrl = `${window.location.origin}/settings.html?${params}`;
 
-  Office.context.ui.displayDialogAsync(settingsUrl, { height: 50, width: 40 }, (result) => {
+  Office.context.ui.displayDialogAsync(settingsUrl, { height: 65, width: 40 }, (result) => {
     event.completed();
 
     if (result.status === Office.AsyncResultStatus.Failed) {
@@ -503,6 +512,9 @@ function openSettingsCore(event) {
         const data = JSON.parse(arg.message);
         if (typeof data.ecoMessageEnabled !== "undefined") {
           localStorage.setItem(ECO_MESSAGE_KEY, data.ecoMessageEnabled ? "1" : "0");
+        }
+        if (typeof data.ecoMessageText !== "undefined") {
+          localStorage.setItem(ECO_MESSAGE_TEXT_KEY, data.ecoMessageText);
         }
         if (data.action === "close") {
           dialog.close();
