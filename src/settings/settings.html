@@ -32,6 +32,28 @@
       margin-bottom: 20px;
       padding-bottom: 12px;
       border-bottom: 1px solid #edebe9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 img,
+    .savings-section h2 img,
+    .savings-row-icon img {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+    }
+
+    .savings-section h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .savings-row-icon img {
+      width: 18px;
+      height: 18px;
     }
 
     .setting-item {
@@ -261,7 +283,7 @@
 </head>
 
 <body>
-  <h1 id="settingsTitle">⚙️ Paramètres MailLighter</h1>
+  <h1><img src="/assets/icon-settings-32.png" alt="" /><span id="settingsTitle">Paramètres de MailLighter</span></h1>
 
   <div class="setting-item">
     <label class="setting-label">
@@ -286,20 +308,20 @@
   </div>
 
   <div class="savings-section">
-    <h2 id="savingsTitle">📊 Mes économies</h2>
+    <h2 id="savingsTitle">Mes économies</h2>
     <div class="savings-rows">
       <div class="savings-row">
-        <span class="savings-row-icon">🖼</span>
+        <span class="savings-row-icon"><img src="/assets/icon-remove-images-32.png" alt="" /></span>
         <span class="savings-row-label" id="savingsImagesLabel">Images</span>
         <span class="savings-row-value" id="savingsImages">—</span>
       </div>
       <div class="savings-row">
-        <span class="savings-row-icon">💬</span>
+        <span class="savings-row-icon"><img src="/assets/icon-keep-replies-32.png" alt="" /></span>
         <span class="savings-row-label" id="savingsRepliesLabel">Réponses</span>
         <span class="savings-row-value" id="savingsReplies">—</span>
       </div>
       <div class="savings-row">
-        <span class="savings-row-icon">📎</span>
+        <span class="savings-row-icon"><img src="/assets/icon-remove-attachments-32.png" alt="" /></span>
         <span class="savings-row-label" id="savingsAttachmentsLabel">Pièces jointes</span>
         <span class="savings-row-value" id="savingsAttachments">—</span>
       </div>
