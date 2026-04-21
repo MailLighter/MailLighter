@@ -33,6 +33,16 @@
       margin-top: 12px; padding: 8px; border: 1px solid #d0d0d0;
       border-radius: 4px; background: #fff; max-height: 35vh; overflow: auto;
     }
+    .log-panel {
+      margin-top: 12px; padding: 8px; border: 1px solid #d0d0d0;
+      border-radius: 4px; background: #fff; max-height: 35vh; overflow: auto;
+    }
+    .log-panel h3 { font-size: 13px; margin-bottom: 6px; color: #0078d4; }
+    #dialogLog {
+      font-family: Consolas, monospace; font-size: 11px;
+      white-space: pre-wrap; word-break: break-all;
+      max-height: 30vh; overflow: auto; margin: 0;
+    }
     #separators h3 { font-size: 13px; margin-bottom: 6px; color: #0078d4; }
     .sep-item {
       margin-bottom: 8px; padding: 6px; background: #f4f4f4;
@@ -50,12 +60,18 @@
     <button id="btnRefresh" class="primary">Refresh</button>
     <button id="btnCopy">Copy HTML</button>
     <button id="btnCopySep">Copy Separators</button>
+    <button id="btnOpenSettings">Test open Settings</button>
+    <button id="btnClearLog">Clear log</button>
   </div>
   <div id="status">Click Refresh to load the email HTML.</div>
   <pre id="htmlOutput"></pre>
   <div id="separators">
     <h3>Detected separators</h3>
     <div id="sepList"><span class="sep-none">No data yet.</span></div>
+  </div>
+  <div class="log-panel">
+    <h3>Settings dialog log</h3>
+    <pre id="dialogLog">No dialog activity yet.</pre>
   </div>
 </body>
 

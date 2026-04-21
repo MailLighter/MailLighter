@@ -40,7 +40,7 @@
     }
   },
   "settings": {
-    "title": "Paramètres MailLighter",
+    "title": "Paramètres de MailLighter",
     "ecoMessageTitle": "Message écologique",
     "ecoMessageDescription": "Ajoute automatiquement un message quand l'historique des réponses est supprimé.",
     "previewLabel": "Aperçu du message",

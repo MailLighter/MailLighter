@@ -11,12 +11,21 @@ function formatBytes(bytes) {
   return `${Math.round((kb / (1024 * 1024)) * 100) / 100} ${t("units.gigabytes")}`;
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function updatePreview(text) {
-  const linked = text.replace(
+  const linked = escapeHtml(text).replace(
     /MailLighter/g,
     '<a href="https://www.maillighter.com" target="_blank" style="color:#1b5e20;">MailLighter</a>'
   );
-  document.getElementById("ecoPreviewText").innerHTML = `--<br>${linked}`;
+  document.getElementById("ecoPreviewText").innerHTML = linked;
 }
 
 Office.onReady(() => {
@@ -34,7 +43,7 @@ Office.onReady(() => {
   const closeButton = document.getElementById("closeButton");
 
   // Apply i18n text
-  document.getElementById("settingsTitle").textContent = `⚙️ ${t("settings.title")}`;
+  document.getElementById("settingsTitle").textContent = t("settings.title");
   document.getElementById("ecoMessageTitle").textContent = t("settings.ecoMessageTitle");
   document.getElementById("ecoMessageDescription").textContent = t(
     "settings.ecoMessageDescription"
@@ -42,7 +51,7 @@ Office.onReady(() => {
   document.getElementById("previewLabel").textContent = t("settings.previewLabel");
   document.getElementById("ecoMessageEditLabel").textContent = t("settings.ecoMessageEditLabel");
   document.getElementById("ecoResetButton").textContent = t("settings.ecoMessageReset");
-  document.getElementById("savingsTitle").textContent = `📊 ${t("settings.savingsTitle")}`;
+  document.getElementById("savingsTitle").textContent = t("settings.savingsTitle");
   document.getElementById("savingsImagesLabel").textContent = t("settings.savingsImages");
   document.getElementById("savingsRepliesLabel").textContent = t("settings.savingsReplies");
   document.getElementById("savingsAttachmentsLabel").textContent = t("settings.savingsAttachments");
@@ -83,6 +92,14 @@ Office.onReady(() => {
   });
 
   closeButton.addEventListener("click", () => {
-    Office.context.ui.messageParent(JSON.stringify({ action: "close" }));
+    // Ask the parent to close us (works on Outlook Web).  Desktop cleans up
+    // the dialog handle after event.completed() so dialog.close() from the
+    // parent throws; fall back to window.close() which works on WebView2.
+    try {
+      Office.context.ui.messageParent(JSON.stringify({ action: "close" }));
+    } catch {
+      // ignore
+    }
+    window.close();
   });
 });
