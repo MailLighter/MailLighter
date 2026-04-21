@@ -155,9 +155,9 @@
                         <Description resid="Settings.Tooltip"/>
                       </Supertip>
                       <Icon>
-                        <bt:Image size="16" resid="Icon.16x16"/>
-                        <bt:Image size="32" resid="Icon.32x32"/>
-                        <bt:Image size="80" resid="Icon.80x80"/>
+                        <bt:Image size="16" resid="Settings.16x16"/>
+                        <bt:Image size="32" resid="Settings.32x32"/>
+                        <bt:Image size="80" resid="Settings.80x80"/>
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>openSettingsCommand</FunctionName>
@@ -206,6 +206,9 @@
         <bt:Image id="CleanAll.16x16" DefaultValue="https://localhost:3000/assets/icon-clean-all-16.png"/>
         <bt:Image id="CleanAll.32x32" DefaultValue="https://localhost:3000/assets/icon-clean-all-32.png"/>
         <bt:Image id="CleanAll.80x80" DefaultValue="https://localhost:3000/assets/icon-clean-all-80.png"/>
+        <bt:Image id="Settings.16x16" DefaultValue="https://localhost:3000/assets/icon-settings-16.png"/>
+        <bt:Image id="Settings.32x32" DefaultValue="https://localhost:3000/assets/icon-settings-32.png"/>
+        <bt:Image id="Settings.80x80" DefaultValue="https://localhost:3000/assets/icon-settings-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
@@ -388,9 +391,9 @@
                           <Description resid="Settings.Tooltip"/>
                         </Supertip>
                         <Icon>
-                          <bt:Image size="16" resid="Icon.16x16"/>
-                          <bt:Image size="32" resid="Icon.32x32"/>
-                          <bt:Image size="80" resid="Icon.80x80"/>
+                          <bt:Image size="16" resid="Settings.16x16"/>
+                          <bt:Image size="32" resid="Settings.32x32"/>
+                          <bt:Image size="80" resid="Settings.80x80"/>
                         </Icon>
                         <Action xsi:type="ExecuteFunction">
                           <FunctionName>openSettingsCommand</FunctionName>
@@ -439,6 +442,9 @@
           <bt:Image id="CleanAll.16x16" DefaultValue="https://localhost:3000/assets/icon-clean-all-16.png"/>
           <bt:Image id="CleanAll.32x32" DefaultValue="https://localhost:3000/assets/icon-clean-all-32.png"/>
           <bt:Image id="CleanAll.80x80" DefaultValue="https://localhost:3000/assets/icon-clean-all-80.png"/>
+          <bt:Image id="Settings.16x16" DefaultValue="https://localhost:3000/assets/icon-settings-16.png"/>
+          <bt:Image id="Settings.32x32" DefaultValue="https://localhost:3000/assets/icon-settings-32.png"/>
+          <bt:Image id="Settings.80x80" DefaultValue="https://localhost:3000/assets/icon-settings-80.png"/>
         </bt:Images>
         <bt:Urls>
           <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
