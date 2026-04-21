@@ -88,7 +88,7 @@
     }
 
     .eco-preview a {
-      color: #0078d4;
+      color: #1b5e20;
       text-decoration: none;
     }
 
@@ -102,6 +102,63 @@
       letter-spacing: 0.5px;
       color: #a19f9d;
       margin-bottom: 6px;
+    }
+
+    .eco-edit-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #a19f9d;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+
+    .eco-textarea-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .eco-textarea {
+      flex: 1;
+      min-height: 72px;
+      font-family: inherit;
+      font-size: 12px;
+      padding: 8px;
+      border: 1px solid #c8c6c4;
+      border-radius: 4px;
+      resize: vertical;
+      color: #323130;
+      line-height: 1.5;
+    }
+
+    .eco-textarea:focus {
+      outline: none;
+      border-color: #0078d4;
+    }
+
+    .reset-btn {
+      padding: 6px 10px;
+      background: #f3f2f1;
+      color: #323130;
+      border: 1px solid #c8c6c4;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.1s;
+    }
+
+    .reset-btn:hover {
+      background: #edebe9;
+    }
+
+    .eco-preview-rendered {
+      font-size: 12px;
+      color: #2e7d32;
+      line-height: 1.5;
     }
 
     .footer {
@@ -218,8 +275,13 @@
     </label>
 
     <div class="eco-preview" id="ecoPreview">
+      <div class="eco-edit-label" id="ecoMessageEditLabel">Personnaliser le message</div>
+      <div class="eco-textarea-row">
+        <textarea class="eco-textarea" id="ecoMessageTextarea"></textarea>
+        <button class="reset-btn" id="ecoResetButton">Réinitialiser</button>
+      </div>
       <div class="preview-label" id="previewLabel">Aperçu du message</div>
-      <span id="ecoPreviewText">--<br>Par souci d'écologie, l'historique des échanges a été supprimé à l'aide de <a href="https://www.maillighter.com" target="_blank" style="color:#1b5e20;">MailLighter</a>, mais il peut être fourni si besoin (moins d'informations envoyées = moins de données à stocker)</span>
+      <div class="eco-preview-rendered" id="ecoPreviewText"></div>
     </div>
   </div>
 
