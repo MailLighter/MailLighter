@@ -29,15 +29,26 @@ function clearLog() {
 }
 
 function testOpenSettings() {
-  const url = window.location.origin + "/settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0";
+  const url =
+    window.location.origin +
+    "/settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0";
   logLine("displayDialogAsync called with url=" + url);
-  logLine("host=" + (Office.context.mailbox && Office.context.mailbox.diagnostics ? Office.context.mailbox.diagnostics.hostName + "/" + Office.context.mailbox.diagnostics.hostVersion : "unknown"));
+  logLine(
+    "host=" +
+      (Office.context.mailbox && Office.context.mailbox.diagnostics
+        ? Office.context.mailbox.diagnostics.hostName +
+          "/" +
+          Office.context.mailbox.diagnostics.hostVersion
+        : "unknown")
+  );
 
   try {
     Office.context.ui.displayDialogAsync(url, { height: 65, width: 40 }, (result) => {
       logLine("callback status=" + result.status);
       if (result.status !== Office.AsyncResultStatus.Succeeded) {
-        logLine("FAILED error=" + (result.error ? result.error.code + " " + result.error.message : "none"));
+        logLine(
+          "FAILED error=" + (result.error ? result.error.code + " " + result.error.message : "none")
+        );
         return;
       }
       testDialog = result.value;
