@@ -25,16 +25,25 @@ function getEcoMessageText() {
   return localStorage.getItem(ECO_MESSAGE_TEXT_KEY) || t("settings.ecoMessageDefault");
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function appendEcoMessage() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
-  const rawText = getEcoMessageText();
-  const linkedText = rawText.replace(
+  const safeText = escapeHtml(getEcoMessageText());
+  const linkedText = safeText.replace(
     /MailLighter/g,
     '<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>'
   );
   const ecoHtml =
     `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
-    `--<br>${linkedText}</div>`;
+    `${linkedText}</div>`;
   await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
 }
 
@@ -498,33 +507,51 @@ function openSettingsCore(event) {
   const settingsUrl = `${window.location.origin}/settings.html?${params}`;
 
   Office.context.ui.displayDialogAsync(settingsUrl, { height: 65, width: 40 }, (result) => {
-    event.completed();
-
-    if (result.status === Office.AsyncResultStatus.Failed) {
+    if (result.status !== Office.AsyncResultStatus.Succeeded) {
       notify(t("commands.notifications.cannotOpenSettings"));
+      event.completed();
       return;
     }
 
     const dialog = result.value;
+    let completed = false;
+    const finish = () => {
+      if (completed) return;
+      completed = true;
+      event.completed();
+    };
 
     dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
+      let data;
       try {
-        const data = JSON.parse(arg.message);
-        if (typeof data.ecoMessageEnabled !== "undefined") {
-          localStorage.setItem(ECO_MESSAGE_KEY, data.ecoMessageEnabled ? "1" : "0");
-        }
-        if (typeof data.ecoMessageText !== "undefined") {
-          localStorage.setItem(ECO_MESSAGE_TEXT_KEY, data.ecoMessageText);
-        }
-        if (data.action === "close") {
-          dialog.close();
-        }
+        data = JSON.parse(arg.message);
       } catch {
-        // ignore malformed messages
+        return;
+      }
+      if (typeof data.ecoMessageEnabled !== "undefined") {
+        localStorage.setItem(ECO_MESSAGE_KEY, data.ecoMessageEnabled ? "1" : "0");
+      }
+      if (typeof data.ecoMessageText !== "undefined") {
+        localStorage.setItem(ECO_MESSAGE_TEXT_KEY, data.ecoMessageText);
+      }
+      if (data.action === "close") {
+        try {
+          dialog.close();
+        } catch {
+          // dialog handle stale — dialog closed itself via window.close()
+        }
+        // Programmatic close via dialog.close() does not fire
+        // DialogEventReceived, so finish the command here.
+        finish();
       }
     });
 
-    dialog.addEventHandler(Office.EventType.DialogEventReceived, () => {});
+    // Fires on user-initiated close (clicking X) or runtime errors.  We
+    // keep the command alive until then to prevent new Outlook / Web from
+    // tearing down the commands runtime and the dialog with it.
+    dialog.addEventHandler(Office.EventType.DialogEventReceived, () => {
+      finish();
+    });
   });
 }
 
