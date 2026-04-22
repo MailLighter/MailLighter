@@ -1,5 +1,7 @@
 const {
   escapeHtml,
+  formatFileSize,
+  MAILLIGHTER_SITE_URL,
   sanitizeSelectionHtml,
   toHtmlFromText,
 } = require("../src/shared/office-helpers");
@@ -159,5 +161,59 @@ describe("sanitizeSelectionHtml", () => {
   test("preserves normal <a> links", () => {
     const input = '<a href="https://example.com">link</a>';
     expect(sanitizeSelectionHtml(input)).toBe(input);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// formatFileSize
+// ---------------------------------------------------------------------------
+describe("formatFileSize", () => {
+  test("returns the zeroLabel option when bytes is zero or negative", () => {
+    expect(formatFileSize(0, { zeroLabel: "0 KB" })).toBe("0 KB");
+    expect(formatFileSize(-1, { zeroLabel: "0 KB" })).toBe("0 KB");
+    expect(formatFileSize(null, { zeroLabel: "nothing" })).toBe("nothing");
+  });
+
+  test("returns an empty string by default when bytes is zero", () => {
+    expect(formatFileSize(0)).toBe("");
+  });
+
+  test("uses lessThanOne for values below 1 KB", () => {
+    expect(formatFileSize(500)).toBe("< 1 KB");
+  });
+
+  test("formats kilobytes with two decimals", () => {
+    expect(formatFileSize(2048)).toBe("2 KB");
+    expect(formatFileSize(1536)).toBe("1.5 KB");
+  });
+
+  test("switches to megabytes at 1024 KB", () => {
+    expect(formatFileSize(1024 * 1024)).toBe("1 MB");
+    expect(formatFileSize(1024 * 1024 * 2.5)).toBe("2.5 MB");
+  });
+
+  test("switches to gigabytes at 1024 MB", () => {
+    expect(formatFileSize(1024 * 1024 * 1024)).toBe("1 GB");
+  });
+
+  test("respects custom unit labels", () => {
+    const units = {
+      kilobytes: "Ko",
+      megabytes: "Mo",
+      gigabytes: "Go",
+      lessThanOne: "< 1 Ko",
+    };
+    expect(formatFileSize(500, { units })).toBe("< 1 Ko");
+    expect(formatFileSize(2048, { units })).toBe("2 Ko");
+    expect(formatFileSize(1024 * 1024, { units })).toBe("1 Mo");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MAILLIGHTER_SITE_URL
+// ---------------------------------------------------------------------------
+describe("MAILLIGHTER_SITE_URL", () => {
+  test("exposes the canonical marketing URL", () => {
+    expect(MAILLIGHTER_SITE_URL).toBe("https://www.maillighter.com");
   });
 });

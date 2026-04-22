@@ -1,29 +1,28 @@
 /* global Office, document, window, URLSearchParams */
 
 import { t } from "../shared/i18n";
+import { escapeHtml, formatFileSize, MAILLIGHTER_SITE_URL } from "../shared/office-helpers";
 
-function formatBytes(bytes) {
-  if (!bytes || bytes <= 0) return `0 ${t("units.kilobytes")}`;
-  const kb = bytes / 1024;
-  if (kb < 1) return t("units.lessThanOne");
-  if (kb < 1024) return `${Math.round(kb * 100) / 100} ${t("units.kilobytes")}`;
-  if (kb < 1024 * 1024) return `${Math.round((kb / 1024) * 100) / 100} ${t("units.megabytes")}`;
-  return `${Math.round((kb / (1024 * 1024)) * 100) / 100} ${t("units.gigabytes")}`;
+function unitLabels() {
+  return {
+    kilobytes: t("units.kilobytes"),
+    megabytes: t("units.megabytes"),
+    gigabytes: t("units.gigabytes"),
+    lessThanOne: t("units.lessThanOne"),
+  };
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+function formatBytes(bytes) {
+  return formatFileSize(bytes, {
+    zeroLabel: `0 ${t("units.kilobytes")}`,
+    units: unitLabels(),
+  });
 }
 
 function updatePreview(text) {
   const linked = escapeHtml(text).replace(
     /MailLighter/g,
-    '<a href="https://www.maillighter.com" target="_blank" style="color:#1b5e20;">MailLighter</a>'
+    `<a href="${MAILLIGHTER_SITE_URL}" target="_blank" style="color:#1b5e20;">MailLighter</a>`
   );
   document.getElementById("ecoPreviewText").innerHTML = linked;
 }
