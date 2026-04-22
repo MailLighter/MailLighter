@@ -1,4 +1,4 @@
-/* global Office, document, navigator, window */
+/* global Office, document, navigator */
 
 import { findReplySeparators } from "../shared/reply-detection";
 
@@ -6,85 +6,7 @@ Office.onReady(() => {
   document.getElementById("btnRefresh").addEventListener("click", refresh);
   document.getElementById("btnCopy").addEventListener("click", copyToClipboard);
   document.getElementById("btnCopySep").addEventListener("click", copySeparators);
-  document.getElementById("btnOpenSettings").addEventListener("click", testOpenSettings);
-  document.getElementById("btnClearLog").addEventListener("click", clearLog);
 });
-
-let testDialog = null;
-
-function logLine(msg) {
-  const pre = document.getElementById("dialogLog");
-  const stamp = new Date().toLocaleTimeString() + "." + String(Date.now() % 1000).padStart(3, "0");
-  const line = "[" + stamp + "] " + msg;
-  if (pre.textContent === "No dialog activity yet.") {
-    pre.textContent = line;
-  } else {
-    pre.textContent += "\n" + line;
-  }
-  pre.scrollTop = pre.scrollHeight;
-}
-
-function clearLog() {
-  document.getElementById("dialogLog").textContent = "No dialog activity yet.";
-}
-
-function testOpenSettings() {
-  const url = new window.URL(
-    "settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0",
-    window.location.href
-  ).toString();
-  logLine("displayDialogAsync called with url=" + url);
-  logLine(
-    "host=" +
-      (Office.context.mailbox && Office.context.mailbox.diagnostics
-        ? Office.context.mailbox.diagnostics.hostName +
-          "/" +
-          Office.context.mailbox.diagnostics.hostVersion
-        : "unknown")
-  );
-
-  try {
-    Office.context.ui.displayDialogAsync(url, { height: 65, width: 40 }, (result) => {
-      logLine("callback status=" + result.status);
-      if (result.status !== Office.AsyncResultStatus.Succeeded) {
-        logLine(
-          "FAILED error=" + (result.error ? result.error.code + " " + result.error.message : "none")
-        );
-        return;
-      }
-      testDialog = result.value;
-      logLine("dialog handle obtained");
-
-      testDialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
-        logLine("MessageReceived: " + arg.message);
-        try {
-          const data = JSON.parse(arg.message);
-          if (data.action === "close" && testDialog) {
-            logLine("action=close, calling dialog.close()");
-            try {
-              testDialog.close();
-              logLine("dialog.close() OK");
-            } catch (e) {
-              logLine("dialog.close() threw: " + (e && e.message ? e.message : e));
-            }
-            testDialog = null;
-          }
-        } catch (e) {
-          logLine("parse error: " + (e && e.message ? e.message : e));
-        }
-      });
-
-      testDialog.addEventHandler(Office.EventType.DialogEventReceived, (arg) => {
-        logLine("DialogEventReceived code=" + arg.error + " err=" + (arg.message || ""));
-        testDialog = null;
-      });
-
-      logLine("event handlers registered");
-    });
-  } catch (e) {
-    logLine("displayDialogAsync threw: " + (e && e.message ? e.message : e));
-  }
-}
 
 let lastHtml = "";
 
