@@ -183,6 +183,42 @@
               </Group>
             </OfficeTab>
           </ExtensionPoint>
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="msgReadGroup">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="Menu" id="msgReadMenuButton">
+                  <Label resid="MenuButton.Label"/>
+                  <Supertip>
+                    <Title resid="MenuButton.Label"/>
+                    <Description resid="MenuButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Items>
+                    <Item id="msgReadSettingsItem">
+                      <Label resid="Settings.Label"/>
+                      <Supertip>
+                        <Title resid="Settings.Label"/>
+                        <Description resid="Settings.Tooltip"/>
+                      </Supertip>
+                      <Icon>
+                        <bt:Image size="16" resid="Settings.16x16"/>
+                        <bt:Image size="32" resid="Settings.32x32"/>
+                        <bt:Image size="80" resid="Settings.80x80"/>
+                      </Icon>
+                      <Action xsi:type="ExecuteFunction">
+                        <FunctionName>openSettingsCommand</FunctionName>
+                      </Action>
+                    </Item>
+                  </Items>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
         </DesktopFormFactor>
       </Host>
     </Hosts>
@@ -415,6 +451,42 @@
                     <Action xsi:type="ShowTaskpane">
                       <SourceLocation resid="DevViewer.Url"/>
                     </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="msgReadGroup">
+                  <Label resid="GroupLabel"/>
+                  <Control xsi:type="Menu" id="msgReadMenuButton2">
+                    <Label resid="MenuButton.Label"/>
+                    <Supertip>
+                      <Title resid="MenuButton.Label"/>
+                      <Description resid="MenuButton.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Items>
+                      <Item id="msgReadSettingsItem2">
+                        <Label resid="Settings.Label"/>
+                        <Supertip>
+                          <Title resid="Settings.Label"/>
+                          <Description resid="Settings.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="Settings.16x16"/>
+                          <bt:Image size="32" resid="Settings.32x32"/>
+                          <bt:Image size="80" resid="Settings.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>openSettingsCommand</FunctionName>
+                        </Action>
+                      </Item>
+                    </Items>
                   </Control>
                 </Group>
               </OfficeTab>
