@@ -29,9 +29,10 @@ function clearLog() {
 }
 
 function testOpenSettings() {
-  const url =
-    window.location.origin +
-    "/settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0";
+  const url = new URL(
+    "settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0",
+    window.location.href
+  ).toString();
   logLine("displayDialogAsync called with url=" + url);
   logLine(
     "host=" +
