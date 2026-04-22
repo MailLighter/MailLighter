@@ -1,10 +1,11 @@
 /* global Office, document, navigator */
 
+import { escapeHtml } from "../shared/office-helpers";
 import { findReplySeparators } from "../shared/reply-detection";
 
 Office.onReady(() => {
   document.getElementById("btnRefresh").addEventListener("click", refresh);
-  document.getElementById("btnCopy").addEventListener("click", copyToClipboard);
+  document.getElementById("btnCopy").addEventListener("click", copyHtml);
   document.getElementById("btnCopySep").addEventListener("click", copySeparators);
 });
 
@@ -65,12 +66,40 @@ function showSeparators(html) {
   container.innerHTML = items.join("");
 }
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function copyText(text, successMsg, emptyMsg) {
+  if (!text) {
+    setStatus(emptyMsg);
+    return;
+  }
+
+  const fallback = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      setStatus(successMsg + " (fallback)");
+    } catch {
+      setStatus("Copy failed.");
+    }
+    document.body.removeChild(textarea);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => setStatus(successMsg))
+      .catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+function copyHtml() {
+  copyText(lastHtml, "Copied to clipboard!", "Nothing to copy — click Refresh first.");
 }
 
 function copySeparators() {
@@ -79,56 +108,5 @@ function copySeparators() {
     setStatus("No separator data to copy.");
     return;
   }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => setStatus("Separators copied!"))
-      .catch(() => {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand("copy");
-          setStatus("Separators copied! (fallback)");
-        } catch {
-          setStatus("Copy failed.");
-        }
-        document.body.removeChild(ta);
-      });
-  }
-}
-
-function copyToClipboard() {
-  if (!lastHtml) {
-    setStatus("Nothing to copy — click Refresh first.");
-    return;
-  }
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard
-      .writeText(lastHtml)
-      .then(() => setStatus("Copied to clipboard!"))
-      .catch(() => fallbackCopy());
-  } else {
-    fallbackCopy();
-  }
-}
-
-function fallbackCopy() {
-  const textarea = document.createElement("textarea");
-  textarea.value = lastHtml;
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    document.execCommand("copy");
-    setStatus("Copied to clipboard! (fallback)");
-  } catch {
-    setStatus("Copy failed — select the HTML manually.");
-  }
-  document.body.removeChild(textarea);
+  copyText(text, "Separators copied!", "No separator data to copy.");
 }
