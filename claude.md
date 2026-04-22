@@ -7,23 +7,25 @@ Le projet cible principalement Outlook Desktop et fournit des actions rapides po
 
 Le projet expose deux surfaces UI principales :
 
-- le menu déroulant dans le ruban Outlook
-- une taskpane dédiée aux actions partielles de réponse/transfert
+- le menu déroulant dans le ruban Outlook (actions directes)
+- un dialogue de paramètres (message écologique + compteur d'économies)
+
+Une taskpane `dev-viewer` est également livrée comme outil de debug (HTML viewer).
 
 ## Fonctionnalités métier actuelles
 
-### En lecture de message
-
-- Réponse partielle : ouvre un brouillon de réponse avec le texte sélectionné
-- Répondre à tous partiel : ouvre un brouillon de réponse à tous avec le texte sélectionné
-- Transfert partiel : ouvre un brouillon de transfert avec le texte sélectionné
-
 ### En composition
 
+- Ne garder que la sélection (remplace le corps par le texte sélectionné)
 - Supprimer les images
 - Supprimer les pièces jointes
 - Conserver uniquement les 2 dernières réponses
-- Nettoyage complet
+- Nettoyage complet (images + pièces jointes + réponses)
+- Ouvrir les paramètres (message écologique, économies cumulées)
+
+### En lecture de message
+
+- Ouvrir les paramètres (mêmes options qu'en composition)
 
 ## Structure du dépôt
 
@@ -31,17 +33,17 @@ Le projet expose deux surfaces UI principales :
 
 - `manifest.xml` : manifeste Office de l'add-in, avec les commandes, labels, tooltips et ressources localisées
 - `package.json` : scripts npm et dépendances
-- `webpack.config.js` : build webpack, copie des assets, génération de `commands.html` et `taskpane.html`
-- `generate-icons.ps1` : script PowerShell de génération d'icônes PNG
+- `webpack.config.js` : build webpack, copie des assets, génération de `commands.html`, `dev-viewer.html` et `settings.html`
 - `claude.md` : ce fichier de contexte
 
 ### Dossiers importants
 
 - `src/commands/` : logique des commandes Outlook exécutées depuis le ruban
-- `src/taskpane/` : UI et logique de la taskpane
+- `src/settings/` : dialogue des paramètres (message écologique, économies)
+- `src/taskpane/` : taskpane `dev-viewer` (outil de debug du HTML du mail)
 - `src/i18n/` : traductions JSON (`en-US`, `fr-FR`, `es-ES`)
-- `src/shared/` : utilitaires partagés, notamment l'i18n
-- `assets/` : logos et icônes PNG utilisés par le manifeste et la taskpane
+- `src/shared/` : utilitaires partagés (i18n, office-helpers, reply-detection, savings-storage)
+- `assets/` : logos et icônes PNG utilisés par le manifeste et les pages HTML
 - `dist/` : sortie générée par webpack, à ne pas modifier manuellement
 
 ## Fichiers source clés
@@ -53,36 +55,23 @@ Contient la logique métier principale côté commandes Outlook.
 Points importants :
 
 - `notify()` affiche une notification Outlook via `notificationMessages.replaceAsync`
-- le code supprime aussi l'ancienne notification `ActionPerformanceNotification` pour éviter les restes de builds précédents
 - `officeAsync()` centralise les wrappers Promise autour des API Office async
-- les actions partielles utilisent la sélection HTML si disponible, sinon la sélection texte
-- `keepTwoRepliesCore()` travaille maintenant sur le HTML et détecte les séparateurs de réponses avec plusieurs stratégies
+- `keepSelectionOnlyCore()` capture la sélection HTML puis remplace le corps en conservant la zone utilisateur en amont de `_MailOriginal` / `divRplyFwdMsg`
+- `keepTwoRepliesCore()` travaille sur le HTML et détecte les séparateurs de réponses via `findReplySeparators` (voir `src/shared/reply-detection.js`)
+- `openSettingsCore()` ouvre le dialogue de paramètres en passant les économies cumulées et l'état du message écologique via URL search params
 - les commandes sont enregistrées via `Office.actions.associate(...)`
 
-### `src/taskpane/taskpane.html`
+### `src/settings/settings.js` + `src/settings/settings.html`
 
-Taskpane minimaliste qui expose actuellement 3 boutons :
+Dialogue ouvert via `Office.context.ui.displayDialogAsync`.
 
-- réponse partielle
-- répondre à tous partiel
-- transfert partiel
+- permet d'activer/désactiver le « message écologique » ajouté en fin d'email après un nettoyage des réponses
+- affiche les économies cumulées (images / réponses / pièces jointes / total) via `getSavings()`
+- communique vers le parent via `Office.context.ui.messageParent` (JSON)
 
-État actuel :
+### `src/taskpane/dev-viewer.js` + `src/taskpane/dev-viewer.html`
 
-- le header affiche `assets/MailLighter_Logo_transp.png`
-- les boutons affichent les mêmes icônes que le menu ruban
-- le style est en CSS inline dans le fichier HTML
-
-### `src/taskpane/taskpane.js`
-
-Logique de la taskpane.
-
-Points importants :
-
-- même principe de récupération de sélection que dans `commands.js`
-- ouvre les formulaires Outlook avec `displayReplyForm`, `displayReplyAllForm`, `displayForwardForm`
-- fallback sur `displayNewMessageForm` pour le forward si nécessaire
-- localise les labels avec `t()` depuis `src/shared/i18n.js`
+Outil de debug exposé en compose. Permet d'afficher le HTML brut du mail, de le copier et de visualiser le résultat de `findReplySeparators`.
 
 ### `src/shared/i18n.js`
 
@@ -122,12 +111,9 @@ Le nom global de l'add-in reste toutefois `MailLighter` dans le `DisplayName` du
 
 Assets notables présents dans `assets/` :
 
-- `MailLighter_Logo_transp.png` : logo principal utilisé dans la taskpane
-- `icon-reply-*`, `icon-reply-all-*`, `icon-forward-*`
-- `icon-remove-images-*`, `icon-remove-attachments-*`, `icon-keep-replies-*`, `icon-clean-all-*`
+- `MailLighter_Logo_transp.png` : logo principal (dialogue settings)
+- `icon-remove-images-*`, `icon-remove-attachments-*`, `icon-keep-replies-*`, `icon-keep-selection-*`, `icon-clean-all-*`, `icon-settings-*`
 - `icon-16.png`, `icon-32.png`, `icon-64.png`, `icon-80.png`, `icon-128.png` pour l'add-in lui-même
-
-Le script `generate-icons.ps1` permet de régénérer les icônes fonctionnelles en tailles 16, 32 et 80.
 
 ## Build et exécution
 
@@ -144,7 +130,7 @@ Le script `generate-icons.ps1` permet de régénérer les icônes fonctionnelles
 
 - `npm run build:dev` compile correctement actuellement
 - webpack copie les assets vers `dist/assets/`
-- webpack génère `commands.html` et `taskpane.html`
+- webpack génère `commands.html`, `dev-viewer.html` et `settings.html`
 
 ### Points de debug connus
 
@@ -182,35 +168,32 @@ Ne pas écraser ce changement sans raison, car il peut être lié aux essais de 
 - Ne pas modifier `dist/` manuellement
 - Préférer les changements ciblés et minimaux
 - Si un changement touche le ruban Outlook, vérifier `manifest.xml` dans tous les blocs concernés
-- Si un changement touche les libellés taskpane, vérifier aussi `src/i18n/en-US.json`, `src/i18n/fr-FR.json`, `src/i18n/es-ES.json`
-- Si un changement touche les icônes de fonctionnalités, vérifier à la fois `manifest.xml`, `assets/` et `src/taskpane/taskpane.html`
+- Si un changement touche les libellés UI, vérifier aussi `src/i18n/en-US.json`, `src/i18n/fr-FR.json`, `src/i18n/es-ES.json`
+- Si un changement touche les icônes de fonctionnalités, vérifier à la fois `manifest.xml`, `assets/` et `src/settings/settings.html`
 - Pour les actions Outlook, conserver les fallbacks quand une API Office n'est pas disponible dans un contexte donné
 
 ## Pièges techniques importants
 
 - `manifest.xml` contient des ressources dupliquées pour différentes versions Office : il est facile d'oublier une occurrence
-- Les chemins d'images dans `src/taskpane/taskpane.html` sont résolus depuis le fichier source HTML pendant le build webpack
-- Les APIs `displayReplyForm`, `displayReplyAllForm` et `displayForwardForm` ne sont pas toujours disponibles dans tous les contextes Outlook
+- Les chemins d'images dans `src/settings/settings.html` sont résolus depuis le fichier source HTML pendant le build webpack
+- `prependAsync` n'est pas toujours disponible dans tous les contextes Outlook (fallback silencieux dans `keepSelectionOnlyCore`)
 - La récupération de sélection doit tolérer l'absence de HTML et basculer vers du texte simple
 
 ## État fonctionnel récent
 
 Changements déjà intégrés dans le dépôt :
 
-- ajout d'une vraie taskpane pour les actions partielles
-- ajout des icônes fonctionnelles dédiées dans `assets/`
-- affichage des icônes correspondantes dans la taskpane
-- remplacement du header texte de la taskpane par le logo `MailLighter_Logo_transp.png`
-- harmonisation des labels du menu et du panneau en anglais, français et espagnol
+- ajout des icônes fonctionnelles dédiées dans `assets/` (remove-images, remove-attachments, keep-replies, keep-selection, clean-all, settings)
+- dialogue de paramètres (`src/settings/`) avec message écologique et compteur d'économies (`src/shared/savings-storage.js`)
+- harmonisation des labels du menu en anglais, français et espagnol
 - refactorisation de `commands.js` autour de `officeAsync()`
-- suppression de vestiges de sample files vides (`parameters.html`, `parameters.js`)
+- extraction de la détection de séparateurs dans `src/shared/reply-detection.js` (unit-testée)
+- factorisation de `escapeHtml`, `formatFileSize` et `MAILLIGHTER_SITE_URL` dans `src/shared/office-helpers.js`
 
-## Taskpane de debug (optionnelle, hors production)
+## Taskpane de debug
 
-Une taskpane de diagnostic "HTML Viewer (dev)" — bouton ruban en compose,
-affiche le HTML brut du body, copie HTML, copie résultat de `findReplySeparators` —
-peut être (re)mise en place à partir de la spec détaillée dans
-`docs/debug-taskpane.md`. Elle n'est jamais livrée au Store.
+La taskpane "HTML Viewer (dev)" (`src/taskpane/dev-viewer.*`) est livrée dans le manifest en compose.
+Elle affiche le HTML brut du body, le copie et liste les séparateurs détectés par `findReplySeparators`.
 
 ## Si tu dois reprendre le projet rapidement
 
@@ -219,9 +202,9 @@ Lis dans cet ordre :
 1. `package.json`
 2. `manifest.xml`
 3. `src/commands/commands.js`
-4. `src/taskpane/taskpane.html`
-5. `src/taskpane/taskpane.js`
-6. `src/shared/i18n.js`
+4. `src/settings/settings.js`
+5. `src/shared/i18n.js`
+6. `src/shared/office-helpers.js`
 7. `src/i18n/*.json`
 
 ## Consignes de modification
@@ -231,4 +214,4 @@ Rechercher dans le code source avant de modifier. Ne jamais changer du code que 
 ## Résumé opérationnel
 
 Projet Outlook add-in JavaScript orienté actions rapides sur le contenu d'email.
-Le coeur métier est dans `src/commands/commands.js`, la taskpane actuelle couvre les actions partielles, et `manifest.xml` reste la source critique pour le ruban, les labels et les ressources Office.
+Le coeur métier est dans `src/commands/commands.js`, le dialogue de paramètres dans `src/settings/`, et `manifest.xml` reste la source critique pour le ruban, les labels et les ressources Office.

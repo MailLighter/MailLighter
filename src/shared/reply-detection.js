@@ -156,9 +156,6 @@ export function findReplySeparators(htmlBody) {
   // Matches preamble lines like "-------- Original Message --------"
   // or "-----Message d'origine-----" that often appear in a separate block
   // just before the "wrote:" attribution line (ProtonMail, Thunderbird).
-  // Matches preamble lines like "-------- Original Message --------"
-  // or "-----Message d'origine-----" that often appear in a separate block
-  // just before the "wrote:" attribution line (ProtonMail, Thunderbird).
   // No $ anchor: empty paragraphs between the preamble and the wrote: line
   // would break the end-of-string match.
   const preambleRegex =
