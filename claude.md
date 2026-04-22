@@ -205,6 +205,13 @@ Changements déjà intégrés dans le dépôt :
 - refactorisation de `commands.js` autour de `officeAsync()`
 - suppression de vestiges de sample files vides (`parameters.html`, `parameters.js`)
 
+## Taskpane de debug (optionnelle, hors production)
+
+Une taskpane de diagnostic "HTML Viewer (dev)" — bouton ruban en compose,
+affiche le HTML brut du body, copie HTML, copie résultat de `findReplySeparators` —
+peut être (re)mise en place à partir de la spec détaillée dans
+`docs/debug-taskpane.md`. Elle n'est jamais livrée au Store.
+
 ## Si tu dois reprendre le projet rapidement
 
 Lis dans cet ordre :
