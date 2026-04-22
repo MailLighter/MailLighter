@@ -504,7 +504,7 @@ function openSettingsCore(event) {
     savAttachments: savings.attachments,
     savTotal: savings.total,
   });
-  const settingsUrl = new URL(`settings.html?${params}`, window.location.href).toString();
+  const settingsUrl = new window.URL(`settings.html?${params}`, window.location.href).toString();
 
   Office.context.ui.displayDialogAsync(settingsUrl, { height: 65, width: 40 }, (result) => {
     if (result.status !== Office.AsyncResultStatus.Succeeded) {

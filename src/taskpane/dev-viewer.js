@@ -29,7 +29,7 @@ function clearLog() {
 }
 
 function testOpenSettings() {
-  const url = new URL(
+  const url = new window.URL(
     "settings.html?ecoMessage=0&ecoText=&savImages=0&savReplies=0&savAttachments=0&savTotal=0",
     window.location.href
   ).toString();
