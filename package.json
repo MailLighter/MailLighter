@@ -1,9 +1,9 @@
 {
-  "name": "office-addin-taskpane-js",
+  "name": "maillighter",
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OfficeDev/Office-Addin-TaskPane-JS.git"
+    "url": "https://github.com/maillighter/maillighter.git"
   },
   "license": "MIT",
   "config": {
@@ -59,7 +59,6 @@
   },
   "prettier": "office-addin-prettier-config",
   "browserslist": [
-    "last 2 versions",
-    "ie 11"
+    "last 2 versions"
   ]
 }

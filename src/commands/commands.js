@@ -6,9 +6,28 @@
 /* global Office, console, localStorage, window, URLSearchParams */
 
 import { t } from "../shared/i18n";
-import { sanitizeSelectionHtml, toHtmlFromText } from "../shared/office-helpers";
+import {
+  escapeHtml,
+  formatFileSize as formatBytesShared,
+  MAILLIGHTER_SITE_URL,
+  sanitizeSelectionHtml,
+  toHtmlFromText,
+} from "../shared/office-helpers";
 import { findReplySeparators } from "../shared/reply-detection";
 import { addSavings, getSavings } from "../shared/savings-storage";
+
+function unitLabels() {
+  return {
+    kilobytes: t("units.kilobytes"),
+    megabytes: t("units.megabytes"),
+    gigabytes: t("units.gigabytes"),
+    lessThanOne: t("units.lessThanOne"),
+  };
+}
+
+function formatFileSize(bytes) {
+  return formatBytesShared(bytes, { units: unitLabels() });
+}
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -25,21 +44,12 @@ function getEcoMessageText() {
   return localStorage.getItem(ECO_MESSAGE_TEXT_KEY) || t("settings.ecoMessageDefault");
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 async function appendEcoMessage() {
   const htmlBody = await getBodyAsync(Office.CoercionType.Html);
   const safeText = escapeHtml(getEcoMessageText());
   const linkedText = safeText.replace(
     /MailLighter/g,
-    '<a href="https://www.maillighter.com" style="color:#1b5e20;">MailLighter</a>'
+    `<a href="${MAILLIGHTER_SITE_URL}" style="color:#1b5e20;">MailLighter</a>`
   );
   const ecoHtml =
     `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
@@ -47,7 +57,7 @@ async function appendEcoMessage() {
   await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
 }
 
-function notify(message, icon = "Icon.80x80") {
+function notify(message) {
   const item = Office.context.mailbox.item;
 
   if (!item || !item.notificationMessages) {
@@ -57,7 +67,7 @@ function notify(message, icon = "Icon.80x80") {
   item.notificationMessages.replaceAsync("MailLighterNotification", {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     message,
-    icon,
+    icon: "Icon.80x80",
     persistent: false,
   });
 }
@@ -156,28 +166,6 @@ function calculateImageSize(imgMatches) {
   return totalSize;
 }
 
-function formatFileSize(bytes) {
-  if (!bytes || bytes <= 0) {
-    return "";
-  }
-
-  const kilobytes = bytes / 1024;
-
-  if (kilobytes < 1) {
-    return t("units.lessThanOne");
-  }
-
-  if (kilobytes < 1024) {
-    return `${Math.round(kilobytes * 100) / 100} ${t("units.kilobytes")}`;
-  }
-
-  if (kilobytes < 1024 * 1024) {
-    return `${Math.round((kilobytes / 1024) * 100) / 100} ${t("units.megabytes")}`;
-  }
-
-  return `${Math.round((kilobytes / (1024 * 1024)) * 100) / 100} ${t("units.gigabytes")}`;
-}
-
 async function executeWithNotification(
   event,
   worker,
@@ -212,7 +200,8 @@ async function getSelectedHtmlAsync() {
 
   try {
     htmlSelection = (await getSelectedDataAsync(Office.CoercionType.Html)).trim();
-  } catch {
+  } catch (error) {
+    console.warn("[MailLighter] selection HTML read failed:", error.message);
     htmlSelection = "";
   }
 
@@ -228,7 +217,8 @@ async function getSelectedHtmlAsync() {
 
   try {
     textSelection = (await getSelectedDataAsync(Office.CoercionType.Text)).trim();
-  } catch {
+  } catch (error) {
+    console.warn("[MailLighter] selection text read failed:", error.message);
     textSelection = "";
   }
 
