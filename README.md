@@ -30,6 +30,7 @@ All actions are available in **compose mode** from the Outlook ribbon dropdown:
 | **Keep 2 replies** | Keeps only the 2 most recent replies in the thread and removes everything below |
 | **Keep selection only** | Replaces the quoted content with only the text you selected |
 | **Full cleanup** | Runs images + attachments + replies cleanup in one click with a detailed summary |
+| **Settings** | Configure the eco message and view your cumulative savings |
 
 ### Full cleanup summary
 
@@ -43,7 +44,9 @@ Each category shows the count of items processed, the space saved when applicabl
 
 ## How it works
 
-MailLighter integrates directly into the Outlook ribbon as a dropdown menu:
+MailLighter integrates directly into the Outlook ribbon as a dropdown menu.
+
+**When composing an email:**
 
 ```
 Quick Actions
@@ -51,8 +54,23 @@ Quick Actions
 ├── Remove attachments
 ├── Keep 2 replies
 ├── Keep selection only
-└── Full cleanup
+├── Full cleanup
+└── Settings
 ```
+
+**When reading an email:**
+
+```
+Quick Actions
+└── Settings
+```
+
+### Settings
+
+The Settings dialog gives you two things:
+
+- **Eco message** — optionally append an eco-friendly footer to your outgoing emails. You can toggle it on/off and customize the message text.
+- **My savings** — a running total of everything MailLighter has saved across all your emails: bytes removed from images, replies trimmed, and attachments stripped.
 
 ## Languages
 
