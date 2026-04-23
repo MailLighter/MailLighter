@@ -381,6 +381,43 @@ describe("findReplySeparators", () => {
   });
 
   // -----------------------------------------------------------------------
+  // Forwarded-message metadata must survive as its own separator: the
+  // "------- Forwarded Message -------" line sits inline with De:/Date:/Objet
+  // inside a <div>, so the dash-standalone regex (which requires a closing
+  // tag right after) does not fire.  The nested reply chain below it must
+  // still be detectable as a separate boundary.
+  // -----------------------------------------------------------------------
+  test("detects boundary past inline '------- Forwarded Message -------' header", () => {
+    const filler = "<div>" + "x".repeat(700) + "</div>";
+    const html =
+      "<p>Body</p>" +
+      "<hr>" +
+      '<div id="divRplyFwdMsg">' +
+      "<b>De :</b> Alex<br><b>Envoyé :</b> jeudi<br>" +
+      "<b>À :</b> foo@bar<br><b>Objet :</b> Fw: Randonnée" +
+      "</div>" +
+      filler +
+      '<div class="x_protonmail_quote">' +
+      "------- Forwarded Message -------<br>" +
+      "De : Garneray JB &lt;g@g.com&gt;<br>" +
+      "Date : dimanche<br>" +
+      "Objet : Re: Randonnée<br>" +
+      "À : Arnaud<br>" +
+      "CC: Alexandre, Guilhem<br><br>" +
+      '<blockquote class="x_protonmail_quote" type="cite">' +
+      '<div class="x_gmail_attr">Le ven. 25 sept. 2020, Arnaud &lt;a@a.fr&gt; a écrit :<br></div>' +
+      "<blockquote><div>Hello a tous</div></blockquote>" +
+      "</blockquote>" +
+      "</div>";
+    const seps = findReplySeparators(html);
+    expect(seps.length).toBeGreaterThanOrEqual(3);
+    // The third separator must land at or past the "a écrit" chain, not on
+    // the "Forwarded Message" line that introduces metadata we want to keep.
+    const cutWindow = html.substring(seps[2] - 20, seps[2] + 40);
+    expect(cutWindow).not.toMatch(/Forwarded Message/);
+  });
+
+  // -----------------------------------------------------------------------
   // Edge case: no separators
   // -----------------------------------------------------------------------
   test("returns empty array for email with no replies", () => {
