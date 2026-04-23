@@ -368,15 +368,19 @@ async function keepTwoRepliesWork() {
   if (lastHr >= 0 && cutPoint - lastHr < 500 && lastHr >= floor) {
     cutPoint = lastHr;
   } else {
-    // Detect "---separator text---" reply/forward headers (Outlook, all locales).
-    // e.g. "-----Message d'origine-----", "-----Original Message-----",
-    //      "---------- Message original ----------", "--- Forwarded message ---"
+    // Detect "---separator text---" reply headers (Outlook, all locales).
+    // Snap-back only onto "Original Message" variants \u2014 those are reply
+    // boundaries.  "Forwarded Message" variants label content the user
+    // intentionally forwarded (with its De/Date/Objet metadata); snapping
+    // onto them would strip metadata the user wants to keep.
     const dashSepRe =
       /[-\u2010-\u2014]{3,}[ \t\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[ \t\xa0]*[-\u2010-\u2014]{3,}/g;
+    const forwardedLabelRe =
+      /Forwarded Message|Message transf(?:\u00e9|&eacute;|&#233;)r(?:\u00e9|&eacute;|&#233;)|Mensaje reenviado|Weitergeleitete Nachricht|Doorgestuurd bericht|Messaggio inoltrato/i;
     let lastDashSepIdx = -1;
     let dashMatch;
     while ((dashMatch = dashSepRe.exec(before)) !== null) {
-      if (dashMatch.index >= floor) {
+      if (dashMatch.index >= floor && !forwardedLabelRe.test(dashMatch[0])) {
         lastDashSepIdx = dashMatch.index;
       }
     }
