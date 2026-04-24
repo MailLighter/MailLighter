@@ -269,10 +269,10 @@ describe("findReplySeparators", () => {
   });
 
   // -----------------------------------------------------------------------
-  // Mixed thread — Outlook (De+Envoyé) + mimimail (wrote:) + Gmail (a écrit:)
+  // Mixed thread — Outlook (De+Envoyé) + Protonmail (wrote:) + Gmail (a écrit:)
   // Previously only 3 would be detected (best strategy); now all 6 are merged.
   // -----------------------------------------------------------------------
-  test("merges separators across mixed Outlook/mimimail/Gmail thread", () => {
+  test("merges separators across mixed Outlook/Protonmail/Gmail thread", () => {
     const sep = "<p>" + "x".repeat(300) + "</p>";
     const html =
       // Sep 1 — Outlook header (textPositions)
@@ -280,7 +280,7 @@ describe("findReplySeparators", () => {
       "<p>De: Michael Topp<br>Envoyé: Lundi 06 avril 2026<br>Objet: Re:</p>" +
       "<p>Michael Topp</p>" +
       sep +
-      // Sep 2 — mimimail Original Message + wrote (wrotePositions)
+      // Sep 2 — Protonmail Original Message + wrote (wrotePositions)
       "<p>-------- Original Message --------</p>" +
       "<p>On Monday, 03/30/26 at 16:46 Paul Rob &lt;paul@test.fr&gt; wrote:</p>" +
       "<p>Je vous confirme que les comptes sont clos.</p>" +
@@ -290,7 +290,7 @@ describe("findReplySeparators", () => {
       "<p>De : Michael Topp<br>Envoyé : jeudi 26 mars 2026<br>Objet : Re:</p>" +
       "<p>Comment se fait-il que nous ayons encore accès ?</p>" +
       sep +
-      // Sep 4 — mimimail Original Message + wrote (wrotePositions)
+      // Sep 4 — Protonmail Original Message + wrote (wrotePositions)
       "<p>-------- Original Message --------</p>" +
       "<p>On Wednesday, 03/25/26 at 09:45 Paul Rob &lt;paul@test.fr&gt; wrote:</p>" +
       "<p>Ne tenez pas compte des courriers reçus.</p>" +
@@ -302,7 +302,7 @@ describe("findReplySeparators", () => {
       sep +
       // Sep 6 — Gmail French attribution (wrotePositions)
       "<p>Le jeudi 13 novembre 2025, Michael Topp &lt;a@mimimail.com&gt; a écrit :</p>" +
-      "<blockquote><p>Voici le RIB permettant le transfert.</p></blockquote>";
+      "<blockquote><p>Voici le document permettant le traitement.</p></blockquote>";
     const seps = findReplySeparators(html);
     expect(seps.length).toBe(6);
   });
@@ -360,7 +360,7 @@ describe("findReplySeparators", () => {
   });
 
   // -----------------------------------------------------------------------
-  // Preamble line included in cut (mimimail / Thunderbird format)
+  // Preamble line included in cut (Protonmail / Thunderbird format)
   // -----------------------------------------------------------------------
   test("includes '-------- Original Message --------' preamble in cut position", () => {
     const sep = "<p>" + "x".repeat(300) + "</p>";
@@ -393,19 +393,19 @@ describe("findReplySeparators", () => {
       "<p>Body</p>" +
       "<hr>" +
       '<div id="divRplyFwdMsg">' +
-      "<b>De :</b> Alex<br><b>Envoyé :</b> jeudi<br>" +
+      "<b>De :</b> Georges<br><b>Envoyé :</b> jeudi<br>" +
       "<b>À :</b> foo@bar<br><b>Objet :</b> Fw: Randonnée" +
       "</div>" +
       filler +
-      '<div class="x_protonmail_quote">' +
+      '<div class="x_onmail_quote">' +
       "------- Forwarded Message -------<br>" +
-      "De : Garneray JB &lt;g@g.com&gt;<br>" +
+      "De : Cidy &lt;g@g.com&gt;<br>" +
       "Date : dimanche<br>" +
       "Objet : Re: Randonnée<br>" +
-      "À : Arnaud<br>" +
-      "CC: Alexandre, Guilhem<br><br>" +
-      '<blockquote class="x_protonmail_quote" type="cite">' +
-      '<div class="x_gmail_attr">Le ven. 25 sept. 2020, Arnaud &lt;a@a.fr&gt; a écrit :<br></div>' +
+      "À : Rod<br>" +
+      "CC: Albert, Floyd<br><br>" +
+      '<blockquote class="x_onmail_quote" type="cite">' +
+      '<div class="x_gmail_attr">Le ven. 25 sept. 2020, Hash &lt;a@a.fr&gt; a écrit :<br></div>' +
       "<blockquote><div>Hello a tous</div></blockquote>" +
       "</blockquote>" +
       "</div>";
