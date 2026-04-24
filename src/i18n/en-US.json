@@ -35,6 +35,7 @@
       "cannotKeepReplies": "❌ Unable to keep 2 replies",
       "cannotCleanAll": "❌ Unable to run full cleanup",
       "keepSelectionDone": "✅ Body replaced with selection only.",
+      "keepSelectionDoneWithSize": "✅ Body replaced with selection only — {size} saved",
       "cannotKeepSelection": "❌ Unable to keep selection only.",
       "cannotOpenSettings": "❌ Unable to open settings"
     }
@@ -49,7 +50,7 @@
     "ecoMessageDefault": "For ecological reasons, the exchange history has been deleted using MailLighter, but it can be provided if needed (less information sent = less data to store)",
     "savingsTitle": "My savings",
     "savingsImages": "Images",
-    "savingsReplies": "Replies",
+    "savingsReplies": "Text & replies",
     "savingsAttachments": "Attachments",
     "savingsTotal": "Total saved",
     "close": "Close"

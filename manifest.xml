@@ -73,21 +73,6 @@
                     <bt:Image size="80" resid="Icon.80x80"/>
                   </Icon>
                   <Items>
-                    <Item id="msgComposeKeepSelectionItem">
-                      <Label resid="KeepSelection.Label"/>
-                      <Supertip>
-                        <Title resid="KeepSelection.Label"/>
-                        <Description resid="KeepSelection.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="KeepSelection.16x16"/>
-                        <bt:Image size="32" resid="KeepSelection.32x32"/>
-                        <bt:Image size="80" resid="KeepSelection.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>keepSelectionOnlyCommand</FunctionName>
-                      </Action>
-                    </Item>
                     <Item id="msgComposeRemoveImagesItem">
                       <Label resid="RemoveImages.Label"/>
                       <Supertip>
@@ -101,21 +86,6 @@
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>removeImagesCommand</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgComposeRemoveAttachmentsItem">
-                      <Label resid="RemoveAttachments.Label"/>
-                      <Supertip>
-                        <Title resid="RemoveAttachments.Label"/>
-                        <Description resid="RemoveAttachments.Tooltip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="RemoveAttachments.16x16"/>
-                        <bt:Image size="32" resid="RemoveAttachments.32x32"/>
-                        <bt:Image size="80" resid="RemoveAttachments.80x80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>removeAttachmentsCommand</FunctionName>
                       </Action>
                     </Item>
                     <Item id="msgComposeKeepTwoRepliesItem">
@@ -133,6 +103,21 @@
                         <FunctionName>keepTwoRepliesCommand</FunctionName>
                       </Action>
                     </Item>
+                    <Item id="msgComposeRemoveAttachmentsItem">
+                      <Label resid="RemoveAttachments.Label"/>
+                      <Supertip>
+                        <Title resid="RemoveAttachments.Label"/>
+                        <Description resid="RemoveAttachments.Tooltip"/>
+                      </Supertip>
+                      <Icon>
+                        <bt:Image size="16" resid="RemoveAttachments.16x16"/>
+                        <bt:Image size="32" resid="RemoveAttachments.32x32"/>
+                        <bt:Image size="80" resid="RemoveAttachments.80x80"/>
+                      </Icon>
+                      <Action xsi:type="ExecuteFunction">
+                        <FunctionName>removeAttachmentsCommand</FunctionName>
+                      </Action>
+                    </Item>
                     <Item id="msgComposeCleanAllItem">
                       <Label resid="CleanAll.Label"/>
                       <Supertip>
@@ -146,6 +131,21 @@
                       </Icon>
                       <Action xsi:type="ExecuteFunction">
                         <FunctionName>cleanAllCommand</FunctionName>
+                      </Action>
+                    </Item>
+                    <Item id="msgComposeKeepSelectionItem">
+                      <Label resid="KeepSelection.Label"/>
+                      <Supertip>
+                        <Title resid="KeepSelection.Label"/>
+                        <Description resid="KeepSelection.Tooltip"/>
+                      </Supertip>
+                      <Icon>
+                        <bt:Image size="16" resid="KeepSelection.16x16"/>
+                        <bt:Image size="32" resid="KeepSelection.32x32"/>
+                        <bt:Image size="80" resid="KeepSelection.80x80"/>
+                      </Icon>
+                      <Action xsi:type="ExecuteFunction">
+                        <FunctionName>keepSelectionOnlyCommand</FunctionName>
                       </Action>
                     </Item>
                     <Item id="msgComposeSettingsItem">
@@ -345,21 +345,6 @@
                       <bt:Image size="80" resid="Icon.80x80"/>
                     </Icon>
                     <Items>
-                      <Item id="msgComposeKeepSelectionItem2">
-                        <Label resid="KeepSelection.Label"/>
-                        <Supertip>
-                          <Title resid="KeepSelection.Label"/>
-                          <Description resid="KeepSelection.Tooltip"/>
-                        </Supertip>
-                        <Icon>
-                          <bt:Image size="16" resid="KeepSelection.16x16"/>
-                          <bt:Image size="32" resid="KeepSelection.32x32"/>
-                          <bt:Image size="80" resid="KeepSelection.80x80"/>
-                        </Icon>
-                        <Action xsi:type="ExecuteFunction">
-                          <FunctionName>keepSelectionOnlyCommand</FunctionName>
-                        </Action>
-                      </Item>
                       <Item id="msgComposeRemoveImagesItem2">
                         <Label resid="RemoveImages.Label"/>
                         <Supertip>
@@ -373,21 +358,6 @@
                         </Icon>
                         <Action xsi:type="ExecuteFunction">
                           <FunctionName>removeImagesCommand</FunctionName>
-                        </Action>
-                      </Item>
-                      <Item id="msgComposeRemoveAttachmentsItem2">
-                        <Label resid="RemoveAttachments.Label"/>
-                        <Supertip>
-                          <Title resid="RemoveAttachments.Label"/>
-                          <Description resid="RemoveAttachments.Tooltip"/>
-                        </Supertip>
-                        <Icon>
-                          <bt:Image size="16" resid="RemoveAttachments.16x16"/>
-                          <bt:Image size="32" resid="RemoveAttachments.32x32"/>
-                          <bt:Image size="80" resid="RemoveAttachments.80x80"/>
-                        </Icon>
-                        <Action xsi:type="ExecuteFunction">
-                          <FunctionName>removeAttachmentsCommand</FunctionName>
                         </Action>
                       </Item>
                       <Item id="msgComposeKeepTwoRepliesItem2">
@@ -405,6 +375,21 @@
                           <FunctionName>keepTwoRepliesCommand</FunctionName>
                         </Action>
                       </Item>
+                      <Item id="msgComposeRemoveAttachmentsItem2">
+                        <Label resid="RemoveAttachments.Label"/>
+                        <Supertip>
+                          <Title resid="RemoveAttachments.Label"/>
+                          <Description resid="RemoveAttachments.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="RemoveAttachments.16x16"/>
+                          <bt:Image size="32" resid="RemoveAttachments.32x32"/>
+                          <bt:Image size="80" resid="RemoveAttachments.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>removeAttachmentsCommand</FunctionName>
+                        </Action>
+                      </Item>
                       <Item id="msgComposeCleanAllItem2">
                         <Label resid="CleanAll.Label"/>
                         <Supertip>
@@ -418,6 +403,21 @@
                         </Icon>
                         <Action xsi:type="ExecuteFunction">
                           <FunctionName>cleanAllCommand</FunctionName>
+                        </Action>
+                      </Item>
+                      <Item id="msgComposeKeepSelectionItem2">
+                        <Label resid="KeepSelection.Label"/>
+                        <Supertip>
+                          <Title resid="KeepSelection.Label"/>
+                          <Description resid="KeepSelection.Tooltip"/>
+                        </Supertip>
+                        <Icon>
+                          <bt:Image size="16" resid="KeepSelection.16x16"/>
+                          <bt:Image size="32" resid="KeepSelection.32x32"/>
+                          <bt:Image size="80" resid="KeepSelection.80x80"/>
+                        </Icon>
+                        <Action xsi:type="ExecuteFunction">
+                          <FunctionName>keepSelectionOnlyCommand</FunctionName>
                         </Action>
                       </Item>
                       <Item id="msgComposeSettingsItem2">
