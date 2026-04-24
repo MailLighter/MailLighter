@@ -35,6 +35,7 @@
       "cannotKeepReplies": "❌ No se pudieron conservar 2 respuestas",
       "cannotCleanAll": "❌ No se pudo ejecutar la limpieza completa",
       "keepSelectionDone": "✅ Contenido reemplazado por la selección únicamente.",
+      "keepSelectionDoneWithSize": "✅ Contenido reemplazado por la selección — {size} ahorrados",
       "cannotKeepSelection": "❌ No se pudo conservar solo la selección.",
       "cannotOpenSettings": "❌ No se pueden abrir los ajustes"
     }
@@ -49,7 +50,7 @@
     "ecoMessageDefault": "Por motivos ecológicos, el historial de conversación ha sido eliminado usando MailLighter, pero puede proporcionarse si se necesita (menos información enviada = menos datos que almacenar)",
     "savingsTitle": "Mis ahorros",
     "savingsImages": "Imágenes",
-    "savingsReplies": "Respuestas",
+    "savingsReplies": "Texto y respuestas",
     "savingsAttachments": "Adjuntos",
     "savingsTotal": "Total ahorrado",
     "close": "Cerrar"
