@@ -26,10 +26,10 @@ All actions are available in **compose mode** from the Outlook ribbon dropdown:
 | Action | Description |
 |--------|-------------|
 | **Remove images** | Strips all inline images from the email body and shows the space saved |
-| **Remove attachments** | Removes all attached files (excluding inline) and shows the space saved |
 | **Keep 2 replies** | Keeps only the 2 most recent replies in the thread and removes everything below |
-| **Keep selection only** | Replaces the quoted content with only the text you selected |
+| **Remove attachments** | Removes all attached files (excluding inline) and shows the space saved |
 | **Full cleanup** | Runs images + attachments + replies cleanup in one click with a detailed summary |
+| **Keep selection only** | Replaces the quoted content with only the text you selected |
 | **Settings** | Configure the eco message and view your cumulative savings |
 
 ### Full cleanup summary
@@ -51,10 +51,10 @@ MailLighter integrates directly into the Outlook ribbon as a dropdown menu.
 ```
 Quick Actions
 ├── Remove images
-├── Remove attachments
 ├── Keep 2 replies
-├── Keep selection only
+├── Remove attachments
 ├── Full cleanup
+├── Keep selection only
 └── Settings
 ```
 

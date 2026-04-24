@@ -263,14 +263,13 @@ async function keepSelectionOnlyCore() {
 
   const separator = '<hr style="border:none;border-top:1px solid #b5b5b5;margin:8px 0;">';
 
-  if (cutPoint > 0) {
-    const userArea = fullBody.substring(0, cutPoint);
-    const newBody = userArea + separator + selectedHtml;
-    await setBodyAsync(newBody, Office.CoercionType.Html);
-  } else {
-    const parts = ["<div><br></div>", separator, selectedHtml];
-    await setBodyAsync(parts.join(""), Office.CoercionType.Html);
-  }
+  const newBodyHtml =
+    cutPoint > 0
+      ? fullBody.substring(0, cutPoint) + separator + selectedHtml
+      : "<div><br></div>" + separator + selectedHtml;
+
+  const savedBytes = Math.max(0, fullBody.length - newBodyHtml.length);
+  await setBodyAsync(newBodyHtml, Office.CoercionType.Html);
 
   // 4. Prepend an empty line to place the cursor at the very top.
   //    Works in Old Outlook. In New Outlook the cursor stays at the bottom
@@ -281,7 +280,12 @@ async function keepSelectionOnlyCore() {
     // prependAsync not available in this client
   }
 
-  return t("commands.notifications.keepSelectionDone");
+  if (savedBytes > 0) addSavings("replies", savedBytes);
+
+  const sizeText = savedBytes > 0 ? formatFileSize(savedBytes) : "";
+  return sizeText
+    ? t("commands.notifications.keepSelectionDoneWithSize", { size: sizeText })
+    : t("commands.notifications.keepSelectionDone");
 }
 
 async function removeImagesWork() {
