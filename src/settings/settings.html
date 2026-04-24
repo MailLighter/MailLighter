@@ -241,9 +241,13 @@
     }
 
     .savings-row-icon {
-      width: 20px;
+      min-width: 20px;
+      width: auto;
       text-align: center;
       flex-shrink: 0;
+      display: flex;
+      gap: 2px;
+      align-items: center;
     }
 
     .savings-row-label {
@@ -316,7 +320,10 @@
         <span class="savings-row-value" id="savingsImages">—</span>
       </div>
       <div class="savings-row">
-        <span class="savings-row-icon"><img src="/assets/icon-keep-replies-32.png" alt="" /></span>
+        <span class="savings-row-icon">
+          <img src="/assets/icon-keep-replies-32.png" alt="" />
+          <img src="/assets/icon-keep-selection-32.png" alt="" />
+        </span>
         <span class="savings-row-label" id="savingsRepliesLabel">Réponses</span>
         <span class="savings-row-value" id="savingsReplies">—</span>
       </div>
