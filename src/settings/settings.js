@@ -1,4 +1,4 @@
-/* global Office, document, window, URLSearchParams */
+/* global Office, document, window, URLSearchParams, clearTimeout, setTimeout */
 
 import { t } from "../shared/i18n";
 import { escapeHtml, formatFileSize, MAILLIGHTER_SITE_URL } from "../shared/office-helpers";
