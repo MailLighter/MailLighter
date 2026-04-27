@@ -139,6 +139,10 @@ function removeAttachmentAsync(attachmentId) {
 }
 
 function calculateImageSize(imgMatches) {
+  // Heuristic: prefer the explicit data-size attribute when available.
+  // Otherwise estimate from width×height dimensions using a rough 0.5 bit/pixel
+  // compressed approximation (width*height/2000 kilobytes, rounded to 5 KB blocks).
+  // If no dimension info is present at all, fall back to a 50 KB flat estimate.
   let totalSize = 0;
 
   imgMatches.forEach((imgTag) => {

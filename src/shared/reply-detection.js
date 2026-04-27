@@ -4,6 +4,17 @@
  * Extracted from commands.js to allow unit testing.
  */
 
+/**
+ * Collect all positions (indices) in `htmlBody` where `regex` matches.
+ *
+ * @param {string} htmlBody - The HTML string to search.
+ * @param {RegExp} regex - **Must have the global (`g`) flag set.** Without it
+ *   the `while` loop will not advance `lastIndex` and will loop infinitely.
+ * @param {RegExp|null} [headerCheck] - Optional secondary regex applied to the
+ *   200-char window after each match; the position is only recorded when this
+ *   check passes.
+ * @returns {number[]} Sorted array of character positions.
+ */
 export function collectRegexPositions(htmlBody, regex, headerCheck) {
   const positions = [];
   let match;

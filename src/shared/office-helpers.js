@@ -50,9 +50,10 @@ export function sanitizeSelectionHtml(html) {
       .replace(/<(iframe|embed|object|applet|form)\b[^>]*\/?>/gi, "")
       // Remove event handler attributes (on*)
       .replace(/(<[^>]*)\s+on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, "$1")
-      // Remove javascript: and data: URIs from href and src attributes
+      // Remove javascript: URIs from href and src attributes
       .replace(/(<[^>]*\s)(href|src)\s*=\s*["']?\s*javascript\s*:[^"'>]*/gi, '$1$2=""')
-      .replace(/(<[^>]*\s)(href|src)\s*=\s*["']?\s*data\s*:\s*text\/html[^"'>]*/gi, '$1$2=""')
+      // Remove all data: URIs from href and src attributes (text/html, text/javascript, etc.)
+      .replace(/(<[^>]*\s)(href|src)\s*=\s*["']?\s*data\s*:[^"'>]*/gi, '$1$2=""')
   );
 }
 
