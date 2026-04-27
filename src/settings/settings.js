@@ -1,4 +1,4 @@
-/* global Office, document, window, URLSearchParams */
+/* global Office, document, window, URLSearchParams, clearTimeout, setTimeout */
 
 import { t } from "../shared/i18n";
 import { escapeHtml, formatFileSize, MAILLIGHTER_SITE_URL } from "../shared/office-helpers";
@@ -24,6 +24,10 @@ function updatePreview(text) {
     /MailLighter/g,
     `<a href="${MAILLIGHTER_SITE_URL}" target="_blank" style="color:#1b5e20;">MailLighter</a>`
   );
+  // NOTE: `linked` is safe here because it is produced by escapeHtml() followed
+  // by a single .replace() whose href is a hardcoded constant (MAILLIGHTER_SITE_URL).
+  // Any future modification that introduces user-controlled content into `linked`
+  // before this assignment must go through escapeHtml() first.
   document.getElementById("ecoPreviewText").innerHTML = linked;
 }
 
@@ -78,9 +82,13 @@ Office.onReady(() => {
     Office.context.ui.messageParent(JSON.stringify({ ecoMessageEnabled: checkbox.checked }));
   });
 
+  let ecoTextDebounceTimer = null;
   textarea.addEventListener("input", () => {
     updatePreview(textarea.value);
-    Office.context.ui.messageParent(JSON.stringify({ ecoMessageText: textarea.value }));
+    clearTimeout(ecoTextDebounceTimer);
+    ecoTextDebounceTimer = setTimeout(() => {
+      Office.context.ui.messageParent(JSON.stringify({ ecoMessageText: textarea.value }));
+    }, 300);
   });
 
   document.getElementById("ecoResetButton").addEventListener("click", () => {

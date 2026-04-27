@@ -65,7 +65,10 @@ module.exports = async (env, options) => {
               if (dev) {
                 return content;
               } else {
-                return content.toString().replace(new RegExp(urlDev, "g"), urlProd);
+                return content
+                  .toString()
+                  .replace(new RegExp(urlDev, "g"), urlProd)
+                  .replace(/[ \t]*<!--\s*dev-only-start\s*-->[\s\S]*?<!--\s*dev-only-end\s*-->\n?/g, "");
               }
             },
           },

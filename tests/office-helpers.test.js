@@ -135,6 +135,24 @@ describe("sanitizeSelectionHtml", () => {
     expect(result).not.toContain("data:text/html");
   });
 
+  test("neutralises data:text/javascript in src", () => {
+    const input = '<script src="data:text/javascript,alert(1)"></script>';
+    const result = sanitizeSelectionHtml(input);
+    expect(result).not.toContain("data:text/javascript");
+  });
+
+  test("neutralises data:application/xhtml+xml in href", () => {
+    const input = '<a href="data:application/xhtml+xml,<html/>">click</a>';
+    const result = sanitizeSelectionHtml(input);
+    expect(result).not.toContain("data:application");
+  });
+
+  test("neutralises data: URI without explicit mime type", () => {
+    const input = '<img src="data:,alert(1)">';
+    const result = sanitizeSelectionHtml(input);
+    expect(result).not.toContain("data:");
+  });
+
   // -----------------------------------------------------------------------
   // Preservation of legitimate Outlook HTML
   // -----------------------------------------------------------------------
