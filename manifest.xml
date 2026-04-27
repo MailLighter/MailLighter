@@ -14,7 +14,7 @@
   </Description>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
-  <SupportUrl DefaultValue="https://maillighter.com/docs/"/>
+  <SupportUrl DefaultValue="https://www.maillighter.com/docs/"/>
   <AppDomains>
     <AppDomain>https://maillighter.com</AppDomain>
   </AppDomains>
@@ -165,6 +165,7 @@
                     </Item>
                   </Items>
                 </Control>
+                <!-- dev-only-start -->
                 <Control xsi:type="Button" id="msgComposeDevViewer">
                   <Label resid="DevViewer.Label"/>
                   <Supertip>
@@ -180,6 +181,7 @@
                     <SourceLocation resid="DevViewer.Url"/>
                   </Action>
                 </Control>
+                <!-- dev-only-end -->
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -279,7 +281,10 @@
           <bt:Override Locale="fr-fr" Value="Ne garder que la s&#233;lection"/>
           <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
         </bt:String>
-<bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
+        <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer">
+          <bt:Override Locale="fr-fr" Value="Visionneur HTML"/>
+          <bt:Override Locale="es-es" Value="Visor HTML"/>
+        </bt:String>
         <bt:String id="Settings.Label" DefaultValue="Settings">
           <bt:Override Locale="fr-fr" Value="Param&#232;tres"/>
           <bt:Override Locale="es-es" Value="Configuraci&#243;n"/>
@@ -310,7 +315,10 @@
           <bt:Override Locale="fr-fr" Value="Remplace le contenu du mail par la s&#233;lection uniquement."/>
           <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
         </bt:String>
-<bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
+        <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool).">
+          <bt:Override Locale="fr-fr" Value="Affiche le HTML brut du contenu de l'email (outil de dev)."/>
+          <bt:Override Locale="es-es" Value="Muestra el HTML sin procesar del cuerpo del correo (herramienta de dev)."/>
+        </bt:String>
         <bt:String id="Settings.Tooltip" DefaultValue="Configure MailLighter settings.">
           <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
           <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
@@ -437,6 +445,7 @@
                       </Item>
                     </Items>
                   </Control>
+                  <!-- dev-only-start -->
                   <Control xsi:type="Button" id="msgComposeDevViewer2">
                     <Label resid="DevViewer.Label"/>
                     <Supertip>
@@ -452,6 +461,7 @@
                       <SourceLocation resid="DevViewer.Url"/>
                     </Action>
                   </Control>
+                  <!-- dev-only-end -->
                 </Group>
               </OfficeTab>
             </ExtensionPoint>
@@ -551,7 +561,10 @@
             <bt:Override Locale="fr-fr" Value="Ne garder que la s&#233;lection"/>
             <bt:Override Locale="es-es" Value="Conservar solo la selecci&#243;n"/>
           </bt:String>
-          <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
+          <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer">
+            <bt:Override Locale="fr-fr" Value="Visionneur HTML"/>
+            <bt:Override Locale="es-es" Value="Visor HTML"/>
+          </bt:String>
           <bt:String id="Settings.Label" DefaultValue="Settings">
             <bt:Override Locale="fr-fr" Value="Param&#232;tres"/>
             <bt:Override Locale="es-es" Value="Configuraci&#243;n"/>
@@ -582,7 +595,10 @@
             <bt:Override Locale="fr-fr" Value="Remplace le contenu du mail par la s&#233;lection uniquement."/>
             <bt:Override Locale="es-es" Value="Reemplaza el contenido del correo por la selecci&#243;n &#250;nicamente."/>
           </bt:String>
-          <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
+          <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool).">
+            <bt:Override Locale="fr-fr" Value="Affiche le HTML brut du contenu de l'email (outil de dev)."/>
+            <bt:Override Locale="es-es" Value="Muestra el HTML sin procesar del cuerpo del correo (herramienta de dev)."/>
+          </bt:String>
           <bt:String id="Settings.Tooltip" DefaultValue="Configure MailLighter settings.">
             <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
             <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
