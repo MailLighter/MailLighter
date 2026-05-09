@@ -49,6 +49,8 @@
     "ecoMessageReset": "Restablecer",
     "ecoMessageDefault": "Por motivos ecológicos, el historial de conversación ha sido eliminado usando MailLighter, pero puede proporcionarse si se necesita (menos información enviada = menos datos que almacenar)",
     "savingsTitle": "Mis ahorros",
+    "savingsTransmissionTitle": "Datos ahorrados",
+    "savingsTransmissionHint": "Estos datos corresponden al almacenamiento evitado en cada destinatario",
     "savingsImages": "Imágenes",
     "savingsReplies": "Texto y respuestas",
     "savingsAttachments": "Adjuntos",

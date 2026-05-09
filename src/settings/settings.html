@@ -222,7 +222,14 @@
       font-size: 14px;
       font-weight: 600;
       color: #323130;
-      margin-bottom: 14px;
+      margin-bottom: 6px;
+    }
+
+    .savings-hint {
+      font-size: 11px;
+      color: #605e5c;
+      margin-bottom: 12px;
+      line-height: 1.5;
     }
 
     .savings-rows {
@@ -312,30 +319,31 @@
   </div>
 
   <div class="savings-section">
-    <h2 id="savingsTitle">My savings</h2>
+    <h2 id="savingsTransmissionTitle">Transmission savings</h2>
+    <div class="savings-hint" id="savingsTransmissionHint"></div>
     <div class="savings-rows">
       <div class="savings-row">
         <span class="savings-row-icon"><img src="/assets/icon-remove-images-32.png" alt="" /></span>
-        <span class="savings-row-label" id="savingsImagesLabel">Images</span>
-        <span class="savings-row-value" id="savingsImages">—</span>
+        <span class="savings-row-label" id="transSavingsImagesLabel">Images</span>
+        <span class="savings-row-value" id="transSavingsImages">—</span>
       </div>
       <div class="savings-row">
         <span class="savings-row-icon">
           <img src="/assets/icon-keep-replies-32.png" alt="" />
           <img src="/assets/icon-keep-selection-32.png" alt="" />
         </span>
-        <span class="savings-row-label" id="savingsRepliesLabel">Text &amp; replies</span>
-        <span class="savings-row-value" id="savingsReplies">—</span>
+        <span class="savings-row-label" id="transSavingsRepliesLabel">Text &amp; replies</span>
+        <span class="savings-row-value" id="transSavingsReplies">—</span>
       </div>
       <div class="savings-row">
         <span class="savings-row-icon"><img src="/assets/icon-remove-attachments-32.png" alt="" /></span>
-        <span class="savings-row-label" id="savingsAttachmentsLabel">Attachments</span>
-        <span class="savings-row-value" id="savingsAttachments">—</span>
+        <span class="savings-row-label" id="transSavingsAttachmentsLabel">Attachments</span>
+        <span class="savings-row-value" id="transSavingsAttachments">—</span>
       </div>
     </div>
     <div class="savings-total-box">
-      <span class="savings-total-label" id="savingsTotalLabel">Total saved</span>
-      <span class="savings-total-value" id="savingsTotal">0</span>
+      <span class="savings-total-label" id="transSavingsTotalLabel">Total saved</span>
+      <span class="savings-total-value" id="transSavingsTotal">0</span>
     </div>
   </div>
 

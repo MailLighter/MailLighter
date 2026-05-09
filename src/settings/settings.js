@@ -1,7 +1,8 @@
 /* global Office, document, window, URLSearchParams, clearTimeout, setTimeout */
 
-import { t } from "../shared/i18n";
-import { escapeHtml, formatFileSize, MAILLIGHTER_SITE_URL } from "../shared/office-helpers";
+import { t } from "../ui/i18n";
+import { formatFileSize, escapeHtml } from "../utils/format";
+import { MAILLIGHTER_SITE_URL } from "../config/constants";
 
 function unitLabels() {
   return {
@@ -31,21 +32,27 @@ function updatePreview(text) {
   document.getElementById("ecoPreviewText").innerHTML = linked;
 }
 
+function intParam(params, key) {
+  const v = parseInt(params.get(key) || "0", 10);
+  return Number.isFinite(v) ? v : 0;
+}
+
 Office.onReady(() => {
   const params = new URLSearchParams(window.location.search);
   const ecoEnabled = params.get("ecoMessage") === "1";
   const ecoText = params.get("ecoText") || t("settings.ecoMessageDefault");
-  const savImages = parseInt(params.get("savImages") || "0", 10);
-  const savReplies = parseInt(params.get("savReplies") || "0", 10);
-  const savAttachments = parseInt(params.get("savAttachments") || "0", 10);
-  const savTotal = parseInt(params.get("savTotal") || "0", 10);
+
+  const transImages = intParam(params, "transImages");
+  const transReplies = intParam(params, "transReplies");
+  const transAttachments = intParam(params, "transAttachments");
+  const transTotal = intParam(params, "transTotal");
 
   const checkbox = document.getElementById("ecoMessageCheckbox");
   const ecoPreview = document.getElementById("ecoPreview");
   const textarea = document.getElementById("ecoMessageTextarea");
   const closeButton = document.getElementById("closeButton");
 
-  // Apply i18n text
+  // Apply i18n text — page chrome
   document.getElementById("settingsTitle").textContent = t("settings.title");
   document.getElementById("ecoMessageTitle").textContent = t("settings.ecoMessageTitle");
   document.getElementById("ecoMessageDescription").textContent = t(
@@ -54,11 +61,21 @@ Office.onReady(() => {
   document.getElementById("previewLabel").textContent = t("settings.previewLabel");
   document.getElementById("ecoMessageEditLabel").textContent = t("settings.ecoMessageEditLabel");
   document.getElementById("ecoResetButton").textContent = t("settings.ecoMessageReset");
-  document.getElementById("savingsTitle").textContent = t("settings.savingsTitle");
-  document.getElementById("savingsImagesLabel").textContent = t("settings.savingsImages");
-  document.getElementById("savingsRepliesLabel").textContent = t("settings.savingsReplies");
-  document.getElementById("savingsAttachmentsLabel").textContent = t("settings.savingsAttachments");
-  document.getElementById("savingsTotalLabel").textContent = t("settings.savingsTotal");
+
+  // Transmission savings section (raw × recipients)
+  document.getElementById("savingsTransmissionTitle").textContent = t(
+    "settings.savingsTransmissionTitle"
+  );
+  document.getElementById("savingsTransmissionHint").textContent = t(
+    "settings.savingsTransmissionHint"
+  );
+  document.getElementById("transSavingsImagesLabel").textContent = t("settings.savingsImages");
+  document.getElementById("transSavingsRepliesLabel").textContent = t("settings.savingsReplies");
+  document.getElementById("transSavingsAttachmentsLabel").textContent = t(
+    "settings.savingsAttachments"
+  );
+  document.getElementById("transSavingsTotalLabel").textContent = t("settings.savingsTotal");
+
   closeButton.textContent = t("settings.close");
 
   // Set initial eco message state
@@ -67,11 +84,11 @@ Office.onReady(() => {
   updatePreview(ecoText);
   if (ecoEnabled) ecoPreview.classList.add("visible");
 
-  // Display savings values
-  document.getElementById("savingsImages").textContent = formatBytes(savImages);
-  document.getElementById("savingsReplies").textContent = formatBytes(savReplies);
-  document.getElementById("savingsAttachments").textContent = formatBytes(savAttachments);
-  document.getElementById("savingsTotal").textContent = formatBytes(savTotal);
+  // Display values — transmission savings
+  document.getElementById("transSavingsImages").textContent = formatBytes(transImages);
+  document.getElementById("transSavingsReplies").textContent = formatBytes(transReplies);
+  document.getElementById("transSavingsAttachments").textContent = formatBytes(transAttachments);
+  document.getElementById("transSavingsTotal").textContent = formatBytes(transTotal);
 
   checkbox.addEventListener("change", () => {
     if (checkbox.checked) {

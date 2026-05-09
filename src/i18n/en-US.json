@@ -49,6 +49,8 @@
     "ecoMessageReset": "Reset",
     "ecoMessageDefault": "For ecological reasons, the exchange history has been deleted using MailLighter, but it can be provided if needed (less information sent = less data to store)",
     "savingsTitle": "My savings",
+    "savingsTransmissionTitle": "Saved data",
+    "savingsTransmissionHint": "This data corresponds to storage avoided per recipient",
     "savingsImages": "Images",
     "savingsReplies": "Text & replies",
     "savingsAttachments": "Attachments",

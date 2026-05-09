@@ -1,7 +1,4 @@
-const {
-  findReplySeparators,
-  findTextSeparators,
-} = require("../src/shared/reply-detection");
+const { findReplySeparators, findTextSeparators } = require("../src/core/replyDetection");
 
 // ===========================================================================
 // findTextSeparators — header-block detection (De/From + confirmation word)

@@ -10,7 +10,7 @@ let getCurrentLocale;
 beforeEach(() => {
   jest.resetModules();
   setLocales();
-  ({ t, getCurrentLocale } = require("../src/shared/i18n"));
+  ({ t, getCurrentLocale } = require("../src/ui/i18n"));
 });
 
 // ---------------------------------------------------------------------------
@@ -20,21 +20,21 @@ describe("getCurrentLocale", () => {
   test("prefers the Office display language over the browser language", () => {
     setLocales({ officeLocale: "fr-CA", browserLocale: "en-US" });
     jest.resetModules();
-    ({ getCurrentLocale } = require("../src/shared/i18n"));
+    ({ getCurrentLocale } = require("../src/ui/i18n"));
     expect(getCurrentLocale()).toBe("fr-FR");
   });
 
   test("falls back to navigator.language when Office is unavailable", () => {
     setLocales({ browserLocale: "es-AR" });
     jest.resetModules();
-    ({ getCurrentLocale } = require("../src/shared/i18n"));
+    ({ getCurrentLocale } = require("../src/ui/i18n"));
     expect(getCurrentLocale()).toBe("es-ES");
   });
 
   test("defaults to en-US for unsupported languages", () => {
     setLocales({ browserLocale: "de-DE" });
     jest.resetModules();
-    ({ getCurrentLocale } = require("../src/shared/i18n"));
+    ({ getCurrentLocale } = require("../src/ui/i18n"));
     expect(getCurrentLocale()).toBe("en-US");
   });
 });
@@ -46,7 +46,7 @@ describe("t", () => {
   test("returns the translated string for the current locale", () => {
     setLocales({ officeLocale: "fr-FR" });
     jest.resetModules();
-    ({ t } = require("../src/shared/i18n"));
+    ({ t } = require("../src/ui/i18n"));
     expect(t("units.kilobytes")).toBe("Ko");
   });
 
@@ -55,7 +55,7 @@ describe("t", () => {
     // locale — the module falls back to en-US internally.
     setLocales({ browserLocale: "ja-JP" });
     jest.resetModules();
-    ({ t } = require("../src/shared/i18n"));
+    ({ t } = require("../src/ui/i18n"));
     expect(t("units.kilobytes")).toBe("KB");
   });
 
@@ -66,7 +66,7 @@ describe("t", () => {
   test("interpolates {token} placeholders from params", () => {
     setLocales({ officeLocale: "fr-FR" });
     jest.resetModules();
-    ({ t } = require("../src/shared/i18n"));
+    ({ t } = require("../src/ui/i18n"));
     expect(t("commands.notifications.imagesRemoved", { count: 3 })).toBe(
       "✅ 3 image(s) supprimée(s)."
     );
@@ -75,7 +75,7 @@ describe("t", () => {
   test("keeps the placeholder when a token is not provided", () => {
     setLocales({ officeLocale: "en-US" });
     jest.resetModules();
-    ({ t } = require("../src/shared/i18n"));
+    ({ t } = require("../src/ui/i18n"));
     expect(t("commands.notifications.imagesRemoved", {})).toBe("✅ {count} image(s) removed.");
   });
 });

@@ -1,10 +1,6 @@
-const {
-  escapeHtml,
-  formatFileSize,
-  MAILLIGHTER_SITE_URL,
-  sanitizeSelectionHtml,
-  toHtmlFromText,
-} = require("../src/shared/office-helpers");
+const { escapeHtml, formatFileSize } = require("../src/utils/format");
+const { sanitizeSelectionHtml, toHtmlFromText } = require("../src/core/htmlSanitizer");
+const { MAILLIGHTER_SITE_URL } = require("../src/config/constants");
 
 // ---------------------------------------------------------------------------
 // escapeHtml

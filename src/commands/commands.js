@@ -3,18 +3,26 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office, console, localStorage, window, URLSearchParams */
+/* global Office, window, URLSearchParams, globalThis */
 
-import { t } from "../shared/i18n";
-import {
-  escapeHtml,
-  formatFileSize as formatBytesShared,
-  MAILLIGHTER_SITE_URL,
-  sanitizeSelectionHtml,
-  toHtmlFromText,
-} from "../shared/office-helpers";
-import { findReplySeparators } from "../shared/reply-detection";
-import { addSavings, getSavings } from "../shared/savings-storage";
+import { t } from "../ui/i18n";
+import { formatFileSize } from "../utils/format";
+import { logger } from "../utils/logger";
+import { STORAGE_KEYS } from "../config/constants";
+import { OutlookAdapter } from "../platforms/outlook/outlookAdapter";
+import { createStorage, getSavings } from "../core/savings/savingsCalculator";
+import { onMessageSend, confirmEagerly } from "../core/lifecycle/sendHandler";
+import { removeImages } from "../core/cleaners/imageCleaner";
+import { removeAttachments } from "../core/cleaners/attachmentCleaner";
+import { keepTwoReplies } from "../core/cleaners/replyCleaner";
+import { keepSelectionOnly } from "../core/cleaners/selectionCleaner";
+import { cleanAll } from "../core/cleaners/fullCleaner";
+import { isEcoMessageEnabled, getEcoMessageText, appendEcoMessage } from "../core/ecoMessage";
+
+Office.onReady(() => {});
+
+const platform = new OutlookAdapter();
+const storage = createStorage();
 
 function unitLabels() {
   return {
@@ -25,405 +33,130 @@ function unitLabels() {
   };
 }
 
-function formatFileSize(bytes) {
-  return formatBytesShared(bytes, { units: unitLabels() });
+function formatBytes(bytes) {
+  return formatFileSize(bytes, { units: unitLabels() });
 }
 
-Office.onReady(() => {
-  // If needed, Office.js is ready to be called.
-});
-
-const ECO_MESSAGE_KEY = "maillighter_eco_message";
-const ECO_MESSAGE_TEXT_KEY = "maillighter_eco_message_text";
-
-function isEcoMessageEnabled() {
-  return localStorage.getItem(ECO_MESSAGE_KEY) === "1";
+function currentEcoText() {
+  return getEcoMessageText(storage, t("settings.ecoMessageDefault"));
 }
 
-function getEcoMessageText() {
-  return localStorage.getItem(ECO_MESSAGE_TEXT_KEY) || t("settings.ecoMessageDefault");
-}
-
-async function appendEcoMessage() {
-  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
-  const safeText = escapeHtml(getEcoMessageText());
-  const linkedText = safeText.replace(
-    /MailLighter/g,
-    `<a href="${MAILLIGHTER_SITE_URL}" style="color:#1b5e20;">MailLighter</a>`
-  );
-  const ecoHtml =
-    `<div style="margin-top:12px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;font-size:13px;">` +
-    `${linkedText}</div>`;
-  await setBodyAsync(htmlBody + ecoHtml, Office.CoercionType.Html);
-}
-
-function notify(message) {
-  const item = Office.context.mailbox.item;
-
-  if (!item || !item.notificationMessages) {
-    return;
+/**
+ * Translates an error key thrown by the adapter/cleaners into a user-facing
+ * notification text, falling back to the generic key when the thrown message
+ * is not a known i18n path.
+ */
+function translateError(error, fallbackKey) {
+  if (error instanceof Error && error.message) {
+    const translated = t(error.message);
+    if (translated !== error.message) return translated;
+    logger.warn(error.message);
   }
-
-  item.notificationMessages.replaceAsync("MailLighterNotification", {
-    type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-    message,
-    icon: "Icon.80x80",
-    persistent: false,
-  });
+  return t(fallbackKey);
 }
 
-function officeAsync(target, method, unavailableKey, failedKey, ...args) {
-  return new Promise((resolve, reject) => {
-    if (!target || typeof target[method] !== "function") {
-      reject(new Error(t(unavailableKey)));
-      return;
-    }
-
-    target[method](...args, (result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve(result.value);
-        return;
-      }
-
-      const rawMessage = result.error && result.error.message ? result.error.message : "";
-      if (rawMessage) {
-        console.error(`[MailLighter] ${method} failed:`, rawMessage);
-      }
-      reject(new Error(t(failedKey)));
-    });
-  });
-}
-
-function getBodyAsync(coercionType) {
-  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
-  return officeAsync(
-    body,
-    "getAsync",
-    "commands.errors.bodyReadUnavailable",
-    "commands.errors.bodyReadFailed",
-    coercionType
-  ).then((v) => v || "");
-}
-
-function setBodyAsync(content, coercionType) {
-  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
-  return officeAsync(
-    body,
-    "setAsync",
-    "commands.errors.bodyWriteUnavailable",
-    "commands.errors.bodyWriteFailed",
-    content,
-    { coercionType }
-  );
-}
-
-function getAttachmentsAsync() {
-  const item = Office.context.mailbox.item;
-  return officeAsync(
-    item,
-    "getAttachmentsAsync",
-    "commands.errors.attachmentsUnavailableContext",
-    "commands.errors.attachmentsReadFailed"
-  ).then((v) => v || []);
-}
-
-function removeAttachmentAsync(attachmentId) {
-  const item = Office.context.mailbox.item;
-  return officeAsync(
-    item,
-    "removeAttachmentAsync",
-    "commands.errors.attachmentsUnavailable",
-    "commands.errors.attachmentRemoveFailed",
-    attachmentId
-  );
-}
-
-function calculateImageSize(imgMatches) {
-  // Heuristic: prefer the explicit data-size attribute when available.
-  // Otherwise estimate from width×height dimensions using a rough 0.5 bit/pixel
-  // compressed approximation (width*height/2000 kilobytes, rounded to 5 KB blocks).
-  // If no dimension info is present at all, fall back to a 50 KB flat estimate.
-  let totalSize = 0;
-
-  imgMatches.forEach((imgTag) => {
-    const dataSizeMatch = imgTag.match(/data-size="?(\d+)"?/i);
-
-    if (dataSizeMatch) {
-      totalSize += parseInt(dataSizeMatch[1], 10);
-      return;
-    }
-
-    const widthMatch = imgTag.match(/width="?(\d+)"?/i);
-    const heightMatch = imgTag.match(/height="?(\d+)"?/i);
-
-    if (widthMatch && heightMatch) {
-      const width = parseInt(widthMatch[1], 10);
-      const height = parseInt(heightMatch[1], 10);
-      const estimatedSize = Math.round((width * height) / 2000) * 5120;
-      totalSize += estimatedSize;
-      return;
-    }
-
-    totalSize += 51200;
-  });
-
-  return totalSize;
-}
-
-async function executeWithNotification(
-  event,
-  worker,
-  errorMessage = t("commands.notifications.genericError")
-) {
+async function executeWithNotification(event, worker, errorKey) {
   try {
     const successMessage = await worker();
-    notify(successMessage);
-  } catch (error) {
-    if (error instanceof Error && error.message) {
-      console.error("[MailLighter]", error.message);
+    platform.notify(successMessage);
+    if (!platform.supportsOnMessageSend()) {
+      try {
+        const composeId = await platform.getComposeId();
+        await confirmEagerly(composeId, storage);
+      } catch (eagerError) {
+        logger.warn("confirmEagerly failed (non-fatal):", eagerError && eagerError.message);
+      }
     }
-    notify(errorMessage);
+  } catch (error) {
+    platform.notify(translateError(error, errorKey));
   } finally {
     event.completed();
   }
 }
 
-function getSelectedDataAsync(coercionType) {
-  const item = Office.context.mailbox.item;
-  return officeAsync(
-    item,
-    "getSelectedDataAsync",
-    "commands.errors.selectionUnavailable",
-    "commands.errors.selectionReadFailed",
-    coercionType
-  ).then((v) => (v && v.data ? String(v.data) : ""));
-}
-
-async function getSelectedHtmlAsync() {
-  let htmlSelection = "";
-
-  try {
-    htmlSelection = (await getSelectedDataAsync(Office.CoercionType.Html)).trim();
-  } catch (error) {
-    console.warn("[MailLighter] selection HTML read failed:", error.message);
-    htmlSelection = "";
-  }
-
-  if (htmlSelection) {
-    const cleaned = sanitizeSelectionHtml(htmlSelection);
-
-    if (cleaned.trim()) {
-      return cleaned;
-    }
-  }
-
-  let textSelection = "";
-
-  try {
-    textSelection = (await getSelectedDataAsync(Office.CoercionType.Text)).trim();
-  } catch (error) {
-    console.warn("[MailLighter] selection text read failed:", error.message);
-    textSelection = "";
-  }
-
-  if (textSelection) {
-    return toHtmlFromText(textSelection);
-  }
-
-  throw new Error(t("commands.errors.selectionEmpty"));
-}
-
-function prependAsync(content, coercionType) {
-  const body = Office.context.mailbox.item && Office.context.mailbox.item.body;
-  return officeAsync(
-    body,
-    "prependAsync",
-    "commands.errors.bodyWriteUnavailable",
-    "commands.errors.bodyWriteFailed",
-    content,
-    { coercionType }
+async function removeImagesCommand(event) {
+  await executeWithNotification(
+    event,
+    async () => {
+      const result = await removeImages(platform);
+      if (result.itemsRemoved === 0) {
+        return t("commands.notifications.imagesNone");
+      }
+      const sizeText = result.bytesRemoved > 0 ? formatBytes(result.bytesRemoved) : "";
+      return sizeText
+        ? t("commands.notifications.imagesRemovedWithSize", {
+            count: result.itemsRemoved,
+            size: sizeText,
+          })
+        : t("commands.notifications.imagesRemoved", { count: result.itemsRemoved });
+    },
+    "commands.notifications.cannotRemoveImages"
   );
 }
 
-async function keepSelectionOnlyCore() {
-  // 1. Capture selection BEFORE reading the full body
-  const selectedHtml = await getSelectedHtmlAsync();
-
-  // 2. Read the full body to find the structure
-  const fullBody = await getBodyAsync(Office.CoercionType.Html);
-
-  // 3. Find where the quoted/forwarded content starts.
-  //    We preserve the user's composing area (typing space, appendonsend, signature)
-  //    and replace everything after _MailOriginal with our separator + selection.
-  const mailOriginalMatch = fullBody.match(/<a[^>]*name\s*=\s*["']_MailOriginal["'][^>]*>/i);
-  const divRplyMatch = fullBody.match(/<div[^>]*\bid\s*=\s*["']divRplyFwdMsg["'][^>]*>/i);
-
-  // Pick the earliest marker
-  let cutPoint = -1;
-  if (mailOriginalMatch) cutPoint = mailOriginalMatch.index;
-  if (divRplyMatch && (cutPoint === -1 || divRplyMatch.index < cutPoint)) {
-    cutPoint = divRplyMatch.index;
-  }
-
-  const separator = '<hr style="border:none;border-top:1px solid #b5b5b5;margin:8px 0;">';
-
-  const newBodyHtml =
-    cutPoint > 0
-      ? fullBody.substring(0, cutPoint) + separator + selectedHtml
-      : "<div><br></div>" + separator + selectedHtml;
-
-  const savedBytes = Math.max(0, fullBody.length - newBodyHtml.length);
-  await setBodyAsync(newBodyHtml, Office.CoercionType.Html);
-
-  // 4. Prepend an empty line to place the cursor at the very top.
-  //    Works in Old Outlook. In New Outlook the cursor stays at the bottom
-  //    (known Office.js API limitation).
-  try {
-    await prependAsync("<div><br></div>", Office.CoercionType.Html);
-  } catch {
-    // prependAsync not available in this client
-  }
-
-  if (savedBytes > 0) addSavings("replies", savedBytes);
-
-  const sizeText = savedBytes > 0 ? formatFileSize(savedBytes) : "";
-  return sizeText
-    ? t("commands.notifications.keepSelectionDoneWithSize", { size: sizeText })
-    : t("commands.notifications.keepSelectionDone");
-}
-
-async function removeImagesWork() {
-  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
-  const imgMatches = htmlBody.match(/<img[^>]*>/gi) || [];
-
-  if (imgMatches.length === 0) {
-    return { count: 0, sizeText: "", totalBytes: 0 };
-  }
-
-  const cleanedHtml = htmlBody.replace(/<img[^>]*>/gi, "");
-  await setBodyAsync(cleanedHtml, Office.CoercionType.Html);
-
-  const totalBytes = calculateImageSize(imgMatches);
-  return { count: imgMatches.length, sizeText: formatFileSize(totalBytes), totalBytes };
-}
-
-async function removeImagesCore() {
-  const { count, sizeText, totalBytes } = await removeImagesWork();
-
-  if (count === 0) {
-    return t("commands.notifications.imagesNone");
-  }
-
-  addSavings("images", totalBytes);
-
-  return sizeText
-    ? t("commands.notifications.imagesRemovedWithSize", { count, size: sizeText })
-    : t("commands.notifications.imagesRemoved", { count });
-}
-
-async function removeAttachmentsWork() {
-  const allAttachments = await getAttachmentsAsync();
-  // Keep only real file attachments, not inline images (signatures, logos, etc.)
-  const attachments = allAttachments.filter((a) => !a.isInline);
-
-  if (attachments.length === 0) {
-    return { count: 0, sizeText: "" };
-  }
-
-  const totalSize = attachments.reduce((sum, attachment) => {
-    const size = typeof attachment.size === "number" ? attachment.size : 0;
-    return sum + size;
-  }, 0);
-
-  await Promise.all(attachments.map((attachment) => removeAttachmentAsync(attachment.id)));
-
-  return { count: attachments.length, sizeText: formatFileSize(totalSize), totalBytes: totalSize };
-}
-
-async function removeAttachmentsCore() {
-  const { count, sizeText, totalBytes } = await removeAttachmentsWork();
-
-  if (count === 0) {
-    return t("commands.notifications.attachmentsNone");
-  }
-
-  addSavings("attachments", totalBytes);
-
-  return sizeText
-    ? t("commands.notifications.attachmentsRemovedWithSize", { count, size: sizeText })
-    : t("commands.notifications.attachmentsRemoved", { count });
-}
-
-async function keepTwoRepliesWork() {
-  const htmlBody = await getBodyAsync(Office.CoercionType.Html);
-  const separators = findReplySeparators(htmlBody);
-
-  if (separators.length === 0) {
-    return { found: 0, cleaned: false };
-  }
-
-  if (separators.length <= 2) {
-    return { found: separators.length, cleaned: false };
-  }
-
-  let cutPoint = separators[2];
-  // Never move the cut earlier than the 2nd reply boundary — that content
-  // is part of the reply we want to keep.
-  const floor = separators[1];
-  const before = htmlBody.substring(0, cutPoint);
-
-  const lastHr = before.lastIndexOf("<hr");
-  if (lastHr >= 0 && cutPoint - lastHr < 500 && lastHr >= floor) {
-    cutPoint = lastHr;
-  } else {
-    // Detect "---separator text---" reply headers (Outlook, all locales).
-    // Snap-back only onto "Original Message" variants \u2014 those are reply
-    // boundaries.  "Forwarded Message" variants label content the user
-    // intentionally forwarded (with its De/Date/Objet metadata); snapping
-    // onto them would strip metadata the user wants to keep.
-    const dashSepRe =
-      /[-\u2010-\u2014]{3,}[ \t\xa0]*[^-\u2010-\u2014\n\r<]{3,60}[ \t\xa0]*[-\u2010-\u2014]{3,}/g;
-    const forwardedLabelRe =
-      /Forwarded Message|Message transf(?:\u00e9|&eacute;|&#233;)r(?:\u00e9|&eacute;|&#233;)|Mensaje reenviado|Weitergeleitete Nachricht|Doorgestuurd bericht|Messaggio inoltrato/i;
-    let lastDashSepIdx = -1;
-    let dashMatch;
-    while ((dashMatch = dashSepRe.exec(before)) !== null) {
-      if (dashMatch.index >= floor && !forwardedLabelRe.test(dashMatch[0])) {
-        lastDashSepIdx = dashMatch.index;
+async function removeAttachmentsCommand(event) {
+  await executeWithNotification(
+    event,
+    async () => {
+      const result = await removeAttachments(platform);
+      if (result.itemsRemoved === 0) {
+        return t("commands.notifications.attachmentsNone");
       }
-    }
-    if (lastDashSepIdx >= 0 && cutPoint - lastDashSepIdx < 1000) {
-      const tagStart = before.lastIndexOf("<", lastDashSepIdx);
-      cutPoint = tagStart >= 0 && tagStart >= floor ? tagStart : lastDashSepIdx;
-    }
-  }
-
-  const savedBytes = htmlBody.length - cutPoint;
-  await setBodyAsync(htmlBody.substring(0, cutPoint), Office.CoercionType.Html);
-  return { found: separators.length, cleaned: true, savedBytes };
+      const sizeText = result.bytesRemoved > 0 ? formatBytes(result.bytesRemoved) : "";
+      return sizeText
+        ? t("commands.notifications.attachmentsRemovedWithSize", {
+            count: result.itemsRemoved,
+            size: sizeText,
+          })
+        : t("commands.notifications.attachmentsRemoved", { count: result.itemsRemoved });
+    },
+    "commands.notifications.cannotRemoveAttachments"
+  );
 }
 
-async function keepTwoRepliesCore() {
-  const { found, cleaned, savedBytes } = await keepTwoRepliesWork();
+async function keepTwoRepliesCommand(event) {
+  await executeWithNotification(
+    event,
+    async () => {
+      const result = await keepTwoReplies(platform);
+      const found = typeof result.found === "number" ? result.found : 0;
 
-  if (found === 0) {
-    return t("commands.notifications.repliesNone");
-  }
+      if (found === 0) {
+        return t("commands.notifications.repliesNone");
+      }
+      if (result.bytesRemoved === 0) {
+        return t("commands.notifications.repliesNoChange", { count: found });
+      }
 
-  if (!cleaned) {
-    return t("commands.notifications.repliesNoChange", { count: found });
-  }
+      if (isEcoMessageEnabled(storage)) {
+        try {
+          await appendEcoMessage(platform, currentEcoText());
+        } catch (ecoError) {
+          logger.warn("appendEcoMessage failed (non-fatal):", ecoError && ecoError.message);
+        }
+      }
 
-  if (isEcoMessageEnabled()) {
-    await appendEcoMessage();
-  }
+      const sizeText = formatBytes(result.bytesRemoved);
+      return sizeText
+        ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
+        : t("commands.notifications.repliesCleaned", { count: found });
+    },
+    "commands.notifications.cannotKeepReplies"
+  );
+}
 
-  addSavings("replies", savedBytes);
-
-  const sizeText = savedBytes ? formatFileSize(savedBytes) : "";
-  return sizeText
-    ? t("commands.notifications.repliesCleanedWithSize", { count: found, size: sizeText })
-    : t("commands.notifications.repliesCleaned", { count: found });
+async function keepSelectionOnlyCommand(event) {
+  await executeWithNotification(
+    event,
+    async () => {
+      const result = await keepSelectionOnly(platform);
+      const sizeText = result.bytesRemoved > 0 ? formatBytes(result.bytesRemoved) : "";
+      return sizeText
+        ? t("commands.notifications.keepSelectionDoneWithSize", { size: sizeText })
+        : t("commands.notifications.keepSelectionDone");
+    },
+    "commands.notifications.cannotKeepSelection"
+  );
 }
 
 function formatCleanAllPart(prefix, count, sizeText) {
@@ -432,85 +165,116 @@ function formatCleanAllPart(prefix, count, sizeText) {
   return sizeText ? `${prefix}${colon}${count} (${sizeText})` : `${prefix}${colon}${count}`;
 }
 
-async function cleanAllCore() {
-  const parts = [];
-  let totalBytes = 0;
+async function cleanAllCommand(event) {
+  await executeWithNotification(
+    event,
+    async () => {
+      const out = await cleanAll(platform);
+      const parts = [];
+      let totalBytes = 0;
 
-  try {
-    const img = await removeImagesWork();
-    parts.push(
-      formatCleanAllPart(t("commands.notifications.cleanAllImagesPrefix"), img.count, img.sizeText)
-    );
-    totalBytes += img.totalBytes || 0;
-    addSavings("images", img.totalBytes || 0);
-  } catch (error) {
-    parts.push(`${t("commands.notifications.cleanAllImagesPrefix")}: ${error.message}`);
-  }
-
-  try {
-    const att = await removeAttachmentsWork();
-    parts.push(
-      formatCleanAllPart(
-        t("commands.notifications.cleanAllAttachmentsPrefix"),
-        att.count,
-        att.sizeText
-      )
-    );
-    totalBytes += att.totalBytes || 0;
-    addSavings("attachments", att.totalBytes || 0);
-  } catch (error) {
-    parts.push(`${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${error.message}`);
-  }
-
-  try {
-    const rep = await keepTwoRepliesWork();
-    const prefix = t("commands.notifications.cleanAllRepliesPrefix");
-    const colon = t("units.colon");
-    if (rep.found === 0) {
-      parts.push(prefix + colon + "0");
-    } else if (rep.cleaned) {
-      const repSizeText = rep.savedBytes ? formatFileSize(rep.savedBytes) : "";
-      parts.push(
-        repSizeText
-          ? `${prefix}${colon}${rep.found} → 2 (${repSizeText})`
-          : `${prefix}${colon}${rep.found} → 2`
-      );
-      totalBytes += rep.savedBytes || 0;
-      addSavings("replies", rep.savedBytes || 0);
-      if (isEcoMessageEnabled()) {
-        await appendEcoMessage();
+      // Images
+      if (out.errors.images) {
+        parts.push(
+          `${t("commands.notifications.cleanAllImagesPrefix")}: ${
+            out.errors.images instanceof Error ? out.errors.images.message : ""
+          }`
+        );
+      } else {
+        const r = out.images;
+        parts.push(
+          formatCleanAllPart(
+            t("commands.notifications.cleanAllImagesPrefix"),
+            r.itemsRemoved,
+            r.bytesRemoved > 0 ? formatBytes(r.bytesRemoved) : ""
+          )
+        );
+        totalBytes += r.bytesRemoved || 0;
       }
-    } else {
-      parts.push(`${prefix}${colon}${rep.found}`);
-    }
-  } catch (error) {
-    parts.push(`${t("commands.notifications.cleanAllRepliesPrefix")}: ${error.message}`);
-  }
 
-  const totalText =
-    totalBytes > 0
-      ? t("commands.notifications.cleanAllTotal", { size: formatFileSize(totalBytes) })
-      : "";
+      // Attachments
+      if (out.errors.attachments) {
+        parts.push(
+          `${t("commands.notifications.cleanAllAttachmentsPrefix")}: ${
+            out.errors.attachments instanceof Error ? out.errors.attachments.message : ""
+          }`
+        );
+      } else {
+        const r = out.attachments;
+        parts.push(
+          formatCleanAllPart(
+            t("commands.notifications.cleanAllAttachmentsPrefix"),
+            r.itemsRemoved,
+            r.bytesRemoved > 0 ? formatBytes(r.bytesRemoved) : ""
+          )
+        );
+        totalBytes += r.bytesRemoved || 0;
+      }
 
-  return t("commands.notifications.cleanAllDone", { details: parts.join(" | "), total: totalText });
+      // Replies
+      if (out.errors.replies) {
+        parts.push(
+          `${t("commands.notifications.cleanAllRepliesPrefix")}: ${
+            out.errors.replies instanceof Error ? out.errors.replies.message : ""
+          }`
+        );
+      } else {
+        const r = out.replies;
+        const found = typeof r.found === "number" ? r.found : 0;
+        const prefix = t("commands.notifications.cleanAllRepliesPrefix");
+        const colon = t("units.colon");
+        if (found === 0) {
+          parts.push(prefix + colon + "0");
+        } else if (r.bytesRemoved > 0) {
+          const repSizeText = formatBytes(r.bytesRemoved);
+          parts.push(
+            repSizeText
+              ? `${prefix}${colon}${found} → 2 (${repSizeText})`
+              : `${prefix}${colon}${found} → 2`
+          );
+          totalBytes += r.bytesRemoved || 0;
+          if (isEcoMessageEnabled(storage)) {
+            try {
+              await appendEcoMessage(platform, currentEcoText());
+            } catch (ecoError) {
+              logger.warn("appendEcoMessage failed (non-fatal):", ecoError && ecoError.message);
+            }
+          }
+        } else {
+          parts.push(`${prefix}${colon}${found}`);
+        }
+      }
+
+      const totalText =
+        totalBytes > 0
+          ? t("commands.notifications.cleanAllTotal", { size: formatBytes(totalBytes) })
+          : "";
+
+      return t("commands.notifications.cleanAllDone", {
+        details: parts.join(" | "),
+        total: totalText,
+      });
+    },
+    "commands.notifications.cannotCleanAll"
+  );
 }
 
-function openSettingsCore(event) {
-  const ecoEnabled = isEcoMessageEnabled();
-  const savings = getSavings();
+function openSettingsCommand(event) {
+  const ecoEnabled = isEcoMessageEnabled(storage);
+  const savings = getSavings(storage);
   const params = new URLSearchParams({
     ecoMessage: ecoEnabled ? "1" : "0",
-    ecoText: getEcoMessageText(),
-    savImages: savings.images,
-    savReplies: savings.replies,
-    savAttachments: savings.attachments,
-    savTotal: savings.total,
+    ecoText: currentEcoText(),
+    transImages: String(savings.transmission.images),
+    transReplies: String(savings.transmission.replies),
+    transAttachments: String(savings.transmission.attachments),
+    transTotal: String(savings.transmission.total),
   });
   const settingsUrl = new window.URL(`settings.html?${params}`, window.location.href).toString();
 
   Office.context.ui.displayDialogAsync(settingsUrl, { height: 65, width: 40 }, (result) => {
     if (result.status !== Office.AsyncResultStatus.Succeeded) {
-      notify(t("commands.notifications.cannotOpenSettings"));
+      platform.notify(t("commands.notifications.cannotOpenSettings"));
       event.completed();
       return;
     }
@@ -531,10 +295,10 @@ function openSettingsCore(event) {
         return;
       }
       if (typeof data.ecoMessageEnabled !== "undefined") {
-        localStorage.setItem(ECO_MESSAGE_KEY, data.ecoMessageEnabled ? "1" : "0");
+        storage.setItem(STORAGE_KEYS.ECO_MESSAGE_ENABLED, data.ecoMessageEnabled ? "1" : "0");
       }
       if (typeof data.ecoMessageText !== "undefined") {
-        localStorage.setItem(ECO_MESSAGE_TEXT_KEY, data.ecoMessageText);
+        storage.setItem(STORAGE_KEYS.ECO_MESSAGE_TEXT, data.ecoMessageText);
       }
       if (data.action === "close") {
         try {
@@ -542,15 +306,10 @@ function openSettingsCore(event) {
         } catch {
           // dialog handle stale — dialog closed itself via window.close()
         }
-        // Programmatic close via dialog.close() does not fire
-        // DialogEventReceived, so finish the command here.
         finish();
       }
     });
 
-    // Fires on user-initiated close (clicking X) or runtime errors.  We
-    // keep the command alive until then to prevent new Outlook / Web from
-    // tearing down the commands runtime and the dialog with it.
     dialog.addEventHandler(Office.EventType.DialogEventReceived, () => {
       finish();
     });
@@ -558,16 +317,25 @@ function openSettingsCore(event) {
 }
 
 // Register all commands with Office.
-[
-  ["removeImagesCommand", removeImagesCore, "cannotRemoveImages"],
-  ["removeAttachmentsCommand", removeAttachmentsCore, "cannotRemoveAttachments"],
-  ["keepTwoRepliesCommand", keepTwoRepliesCore, "cannotKeepReplies"],
-  ["cleanAllCommand", cleanAllCore, "cannotCleanAll"],
-  ["keepSelectionOnlyCommand", keepSelectionOnlyCore, "cannotKeepSelection"],
-].forEach(([name, core, errorKey]) => {
-  Office.actions.associate(name, (event) => {
-    executeWithNotification(event, core, t(`commands.notifications.${errorKey}`));
-  });
-});
+Office.actions.associate("removeImagesCommand", removeImagesCommand);
+Office.actions.associate("removeAttachmentsCommand", removeAttachmentsCommand);
+Office.actions.associate("keepTwoRepliesCommand", keepTwoRepliesCommand);
+Office.actions.associate("cleanAllCommand", cleanAllCommand);
+Office.actions.associate("keepSelectionOnlyCommand", keepSelectionOnlyCommand);
+Office.actions.associate("openSettingsCommand", openSettingsCommand);
 
-Office.actions.associate("openSettingsCommand", openSettingsCore);
+// Expose the OnMessageSend handler globally so the LaunchEvent declared in
+// manifest.xml can find it. webpack must not tree-shake this assignment.
+const onMessageSendGlobalHandler = (eventArgs) => onMessageSend(eventArgs, platform, storage);
+if (typeof globalThis !== "undefined") {
+  globalThis.onMessageSendGlobalHandler = onMessageSendGlobalHandler;
+}
+
+// Re-export to anchor the symbol against tree-shaking.
+export { onMessageSendGlobalHandler };
+
+// Also bind via Office.actions.associate as a fallback some Outlook clients
+// need for LaunchEvent dispatch.
+if (Office.actions && typeof Office.actions.associate === "function") {
+  Office.actions.associate("onMessageSendGlobalHandler", onMessageSendGlobalHandler);
+}
