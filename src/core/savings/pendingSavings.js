@@ -1,3 +1,5 @@
+/* global localStorage */
+
 /**
  * pendingSavings — local queue of "candidate" savings, confirmed (and
  * recorded into the Settings counter) ONLY when the user actually sends

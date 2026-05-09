@@ -64,7 +64,14 @@ export async function keepTwoReplies(platform) {
   const { found, cleaned, cutPoint, savedBytes } = computeKeepTwoRepliesCut(html);
 
   if (!cleaned) {
-    return { ...createCleanupResult({ elementType: ELEMENT_TYPES.REPLY, itemsRemoved: 0, bytesRemoved: 0 }), found };
+    return {
+      ...createCleanupResult({
+        elementType: ELEMENT_TYPES.REPLY,
+        itemsRemoved: 0,
+        bytesRemoved: 0,
+      }),
+      found,
+    };
   }
 
   await platform.setBodyHtml(html.substring(0, cutPoint));
@@ -87,5 +94,12 @@ export async function keepTwoReplies(platform) {
     }
   }
 
-  return { ...createCleanupResult({ elementType: ELEMENT_TYPES.REPLY, itemsRemoved: found, bytesRemoved: savedBytes }), found };
+  return {
+    ...createCleanupResult({
+      elementType: ELEMENT_TYPES.REPLY,
+      itemsRemoved: found,
+      bytesRemoved: savedBytes,
+    }),
+    found,
+  };
 }
