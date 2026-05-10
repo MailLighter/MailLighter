@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+coverage/
 
 # Logs
 *.log
@@ -11,11 +12,25 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # IDE
 .vscode/settings.json
 .idea/
+.history/
+*.swp
+*.swo
+*~
 
 # Environment
 .env
-.env.local
+.env.*
+
+# Claude Code local state
+.claude/
+memory/
+
+# Internal strategy / project docs (kept locally only)
+REFACTOR_PLAN.md
+claude.md
+docs/marketplace-listing.md
