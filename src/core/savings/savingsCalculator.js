@@ -36,15 +36,14 @@ export function createStorage() {
 }
 
 /**
- * Confirms a cleanup event at send time and updates BOTH counters:
- *  - bytesRemoved (raw bytes physically removed from the user's draft)
- *  - bytesRemoved × recipientCount (transmission savings — how many bytes
- *    were avoided across all server hops + recipient mailboxes)
+ * Records a cleanup event into the transmission savings counter:
+ *   bytesRemoved × recipientCount (bytes avoided across recipient mailboxes
+ *   and server hops).
  *
- * Called only by sendHandler. Cleaners must NOT call this.
+ * Called by each cleaner immediately after the cleanup completes.
  *
  * @param {object} storage  - storage abstraction (createStorage() by default)
- * @param {CleanupEvent} event  - event with recipientCount RECALCULATED at send
+ * @param {CleanupEvent} event  - event with recipientCount captured at cleanup
  */
 export function recordConfirmedSavings(storage, event) {
   if (!event || typeof event.bytesRemoved !== "number" || event.bytesRemoved <= 0) {
@@ -64,7 +63,6 @@ export function recordConfirmedSavings(storage, event) {
 /**
  * Reads cumulative savings for the Settings UI.
  *
- *   raw.{images,replies,attachments,total}        -- bytes physically removed
  *   transmission.{images,replies,attachments,total} -- bytes × recipients
  */
 export function getSavings(storage) {

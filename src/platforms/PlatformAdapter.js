@@ -5,7 +5,6 @@
  * doit implémenter. Les modules `core/` ne doivent JAMAIS dépendre de la
  * plateforme directement, uniquement de cette interface.
  *
- * Phase 1a: getTenantIdHash NON présent (ajouté en Phase 1b).
  * getUserIdHash N'EXISTE PAS et ne sera jamais ajouté (invariant RGPD).
  *
  * Les paramètres des stubs ci-dessous documentent la signature attendue
@@ -41,17 +40,5 @@ export class PlatformAdapter {
   }
   notify(message, kind) {
     throw new Error("notify must be implemented");
-  }
-  get platformName() {
-    throw new Error("platformName must be implemented");
-  }
-
-  /**
-   * Identifiant unique de l'email en cours de composition.
-   * Stable pendant toute la durée du compose, change à chaque nouveau compose.
-   * @returns {Promise<string>}
-   */
-  async getComposeId() {
-    throw new Error("getComposeId must be implemented");
   }
 }

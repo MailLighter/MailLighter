@@ -86,7 +86,6 @@ export async function keepTwoReplies(platform, storage) {
           elementType: ELEMENT_TYPES.REPLY,
           bytesRemoved: savedBytes,
           recipientCount: Array.isArray(recipients) ? recipients.length : 0,
-          platform: platform.platformName,
         })
       );
     } catch (e) {

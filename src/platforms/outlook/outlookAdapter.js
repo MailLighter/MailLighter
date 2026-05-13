@@ -1,7 +1,6 @@
-/* global Office, crypto, localStorage */
+/* global Office */
 
 import { PlatformAdapter } from "../PlatformAdapter";
-import { PLATFORMS, STORAGE_KEYS } from "../../config/constants";
 import { sanitizeSelectionHtml, toHtmlFromText } from "../../core/htmlSanitizer";
 import { logger } from "../../utils/logger";
 
@@ -30,33 +29,7 @@ function officeAsync(target, method, unavailableKey, failedKey, ...args) {
   });
 }
 
-const FALLBACK_COMPOSE_ID_KEY = "maillighter_fallback_composeid";
-
-function generateUuid() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  // RFC4122-ish v4 fallback
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 export class OutlookAdapter extends PlatformAdapter {
-  constructor() {
-    super();
-    // Fallback in-memory composeId when sessionData is not available.
-    // Single-compose scenario only; multi-compose without sessionData would
-    // collide, but that is acceptable in Phase 1a.
-    this._fallbackComposeId = null;
-  }
-
-  get platformName() {
-    return PLATFORMS.OUTLOOK;
-  }
-
   getLocale() {
     if (typeof Office !== "undefined" && Office.context) {
       return Office.context.displayLanguage || "";
@@ -222,63 +195,5 @@ export class OutlookAdapter extends PlatformAdapter {
       icon: "Icon.80x80",
       persistent: false,
     });
-  }
-
-  /**
-   * Returns a stable identifier for the current compose session.
-   * Persists across reads within the same compose via Office.js sessionData
-   * when available; falls back to an in-memory UUID otherwise.
-   */
-  async getComposeId() {
-    const item = this._item();
-    if (!item) {
-      return this._getPersistentFallbackId();
-    }
-
-    const sessionData = item.sessionData;
-    if (sessionData && typeof sessionData.getAsync === "function") {
-      try {
-        const existing = await new Promise((resolve, reject) => {
-          sessionData.getAsync(STORAGE_KEYS.COMPOSE_ID, (result) => {
-            if (result.status === Office.AsyncResultStatus.Succeeded) {
-              resolve(result.value || "");
-            } else {
-              reject(new Error(result.error && result.error.message));
-            }
-          });
-        });
-        if (existing) return existing;
-
-        const fresh = generateUuid();
-        await new Promise((resolve, reject) => {
-          sessionData.setAsync(STORAGE_KEYS.COMPOSE_ID, fresh, (result) => {
-            if (result.status === Office.AsyncResultStatus.Succeeded) resolve();
-            else reject(new Error(result.error && result.error.message));
-          });
-        });
-        return fresh;
-      } catch (e) {
-        logger.warn("sessionData composeId failed, using fallback:", e.message);
-      }
-    }
-
-    return this._getPersistentFallbackId();
-  }
-
-  _getPersistentFallbackId() {
-    if (typeof localStorage !== "undefined") {
-      let stored = localStorage.getItem(FALLBACK_COMPOSE_ID_KEY);
-      if (!stored) {
-        stored = generateUuid();
-        try {
-          localStorage.setItem(FALLBACK_COMPOSE_ID_KEY, stored);
-        } catch {
-          // ignore quota/security errors
-        }
-      }
-      return stored;
-    }
-    if (!this._fallbackComposeId) this._fallbackComposeId = generateUuid();
-    return this._fallbackComposeId;
   }
 }

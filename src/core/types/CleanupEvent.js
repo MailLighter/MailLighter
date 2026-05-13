@@ -1,14 +1,11 @@
-import { ELEMENT_TYPES, PLATFORMS } from "../../config/constants";
+import { ELEMENT_TYPES } from "../../config/constants";
 
 /**
- * Représente une action de nettoyage candidate, en attente de confirmation
- * par l'envoi effectif de l'email.
- *
- * Le recipientCount est capturé au cleanup (valeur indicative) puis
- * RECALCULÉ au moment du send par sendHandler avant d'être utilisé pour
- * mettre à jour le compteur Settings (bytesRemoved × recipientCount).
+ * Construit l'objet passé à recordConfirmedSavings après un cleanup.
+ * Le recipientCount est capturé au moment du clic — c'est lui qui multiplie
+ * bytesRemoved pour produire l'économie de transmission.
  */
-export function createCleanupEvent({ elementType, bytesRemoved, recipientCount, platform }) {
+export function createCleanupEvent({ elementType, bytesRemoved, recipientCount }) {
   if (!Object.values(ELEMENT_TYPES).includes(elementType)) {
     throw new Error(`Invalid elementType: ${elementType}`);
   }
@@ -22,7 +19,5 @@ export function createCleanupEvent({ elementType, bytesRemoved, recipientCount, 
     elementType,
     bytesRemoved,
     recipientCount,
-    timestamp: Date.now(),
-    platform: platform || PLATFORMS.OUTLOOK,
   });
 }

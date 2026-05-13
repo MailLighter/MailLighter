@@ -13,7 +13,6 @@ export const STORAGE_KEYS = Object.freeze({
   USER_SAVINGS_TRANSMISSION_ATTACHMENTS: "maillighter_savings_transmission_attachments",
   ECO_MESSAGE_ENABLED: "maillighter_eco_message",
   ECO_MESSAGE_TEXT: "maillighter_eco_message_text",
-  COMPOSE_ID: "ml.composeId",
 });
 
 export const ELEMENT_TYPES = Object.freeze({

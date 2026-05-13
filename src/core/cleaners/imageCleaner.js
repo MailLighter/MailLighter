@@ -70,7 +70,6 @@ export async function removeImages(platform, storage) {
           elementType: ELEMENT_TYPES.IMAGE,
           bytesRemoved,
           recipientCount: Array.isArray(recipients) ? recipients.length : 0,
-          platform: platform.platformName,
         })
       );
     } catch (e) {

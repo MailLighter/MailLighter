@@ -38,7 +38,6 @@ export async function removeAttachments(platform, storage) {
           elementType: ELEMENT_TYPES.ATTACHMENT,
           bytesRemoved: totalSize,
           recipientCount: Array.isArray(recipients) ? recipients.length : 0,
-          platform: platform.platformName,
         })
       );
     } catch (e) {

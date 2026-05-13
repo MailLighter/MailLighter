@@ -68,7 +68,6 @@ export async function keepSelectionOnly(platform, storage) {
           elementType: ELEMENT_TYPES.SELECTION,
           bytesRemoved: savedBytes,
           recipientCount: Array.isArray(recipients) ? recipients.length : 0,
-          platform: platform.platformName,
         })
       );
     } catch (e) {
