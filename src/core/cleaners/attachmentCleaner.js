@@ -1,4 +1,4 @@
-import { addPendingEvent } from "../savings/pendingSavings";
+import { recordConfirmedSavings } from "../savings/savingsCalculator";
 import { createCleanupEvent } from "../types/CleanupEvent";
 import { createCleanupResult } from "../types/CleanupResult";
 import { ELEMENT_TYPES } from "../../config/constants";
@@ -7,8 +7,10 @@ import { logger } from "../../utils/logger";
 /**
  * Remove all non-inline file attachments from the current draft.
  * Inline images (signatures, logos) are preserved.
+ * The Settings counter is updated immediately, using the recipient count
+ * captured at click time.
  */
-export async function removeAttachments(platform) {
+export async function removeAttachments(platform, storage) {
   const allAttachments = await platform.listAttachments();
   const attachments = (allAttachments || []).filter((a) => !a.isInline);
 
@@ -27,12 +29,11 @@ export async function removeAttachments(platform) {
 
   await Promise.all(attachments.map((attachment) => platform.removeAttachment(attachment.id)));
 
-  if (totalSize > 0) {
+  if (totalSize > 0 && storage) {
     try {
-      const composeId = await platform.getComposeId();
       const recipients = await platform.getRecipients();
-      addPendingEvent(
-        composeId,
+      recordConfirmedSavings(
+        storage,
         createCleanupEvent({
           elementType: ELEMENT_TYPES.ATTACHMENT,
           bytesRemoved: totalSize,
@@ -41,7 +42,7 @@ export async function removeAttachments(platform) {
         })
       );
     } catch (e) {
-      logger.warn("attachmentCleaner pending event failed (non-fatal):", e && e.message);
+      logger.warn("attachmentCleaner savings record failed (non-fatal):", e && e.message);
     }
   }
 

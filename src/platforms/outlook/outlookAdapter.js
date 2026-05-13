@@ -265,20 +265,6 @@ export class OutlookAdapter extends PlatformAdapter {
     return this._getPersistentFallbackId();
   }
 
-  supportsOnMessageSend() {
-    try {
-      return (
-        typeof Office !== "undefined" &&
-        Office.context != null &&
-        typeof Office.context.requirements !== "undefined" &&
-        typeof Office.context.requirements.isSetSupported === "function" &&
-        Office.context.requirements.isSetSupported("Mailbox", "1.10")
-      );
-    } catch {
-      return false;
-    }
-  }
-
   _getPersistentFallbackId() {
     if (typeof localStorage !== "undefined") {
       let stored = localStorage.getItem(FALLBACK_COMPOSE_ID_KEY);

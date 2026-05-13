@@ -1,4 +1,4 @@
-import { addPendingEvent } from "../savings/pendingSavings";
+import { recordConfirmedSavings } from "../savings/savingsCalculator";
 import { createCleanupEvent } from "../types/CleanupEvent";
 import { createCleanupResult } from "../types/CleanupResult";
 import { ELEMENT_TYPES } from "../../config/constants";
@@ -9,9 +9,10 @@ import { logger } from "../../utils/logger";
  *
  * Preserves the user's composing zone (typing space, append-on-send, signature)
  * by keeping everything before the _MailOriginal anchor / divRplyFwdMsg block,
- * then injecting a thin separator and the sanitized selection.
+ * then injecting the sanitized selection above the signature (when present)
+ * so the kept text reads as the message body, not as a quote below the sign-off.
  */
-export async function keepSelectionOnly(platform) {
+export async function keepSelectionOnly(platform, storage) {
   // 1. Capture selection BEFORE reading the full body so the cursor context
   //    is still honored.
   const selectedHtml = await platform.getSelectedHtml();
@@ -30,10 +31,21 @@ export async function keepSelectionOnly(platform) {
   }
 
   const separator = '<hr style="border:none;border-top:1px solid #b5b5b5;margin:8px 0;">';
-  const newBodyHtml =
-    cutPoint > 0
-      ? fullBody.substring(0, cutPoint) + separator + selectedHtml
-      : "<div><br></div>" + separator + selectedHtml;
+  const keptPart = cutPoint > 0 ? fullBody.substring(0, cutPoint) : "<div><br></div>";
+
+  // 4. Within the kept part, locate the signature so we can insert the
+  //    selection above it. Outlook (Desktop, OWA, New Outlook) wraps the
+  //    signature in <div id="Signature"> or id="ms-outlook-mobile-signature">.
+  const signatureMatch =
+    keptPart.match(/<div[^>]*\bid\s*=\s*["']Signature["'][^>]*>/i) ||
+    keptPart.match(/<div[^>]*\bid\s*=\s*["']ms-outlook-mobile-signature["'][^>]*>/i);
+
+  const newBodyHtml = signatureMatch
+    ? keptPart.substring(0, signatureMatch.index) +
+      selectedHtml +
+      separator +
+      keptPart.substring(signatureMatch.index)
+    : keptPart + separator + selectedHtml;
 
   const savedBytes = Math.max(0, fullBody.length - newBodyHtml.length);
   await platform.setBodyHtml(newBodyHtml);
@@ -47,12 +59,11 @@ export async function keepSelectionOnly(platform) {
     logger.warn("prependBodyHtml unavailable, cursor will stay at bottom", e && e.message);
   }
 
-  if (savedBytes > 0) {
+  if (savedBytes > 0 && storage) {
     try {
-      const composeId = await platform.getComposeId();
       const recipients = await platform.getRecipients();
-      addPendingEvent(
-        composeId,
+      recordConfirmedSavings(
+        storage,
         createCleanupEvent({
           elementType: ELEMENT_TYPES.SELECTION,
           bytesRemoved: savedBytes,
@@ -61,7 +72,7 @@ export async function keepSelectionOnly(platform) {
         })
       );
     } catch (e) {
-      logger.warn("selectionCleaner pending event failed (non-fatal):", e && e.message);
+      logger.warn("selectionCleaner savings record failed (non-fatal):", e && e.message);
     }
   }
 

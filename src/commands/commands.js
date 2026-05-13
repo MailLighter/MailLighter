@@ -3,7 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office, window, URLSearchParams, globalThis */
+/* global Office, window, URLSearchParams */
 
 import { t } from "../ui/i18n";
 import { formatFileSize } from "../utils/format";
@@ -11,7 +11,6 @@ import { logger } from "../utils/logger";
 import { STORAGE_KEYS } from "../config/constants";
 import { OutlookAdapter } from "../platforms/outlook/outlookAdapter";
 import { createStorage, getSavings } from "../core/savings/savingsCalculator";
-import { onMessageSend, confirmEagerly } from "../core/lifecycle/sendHandler";
 import { removeImages } from "../core/cleaners/imageCleaner";
 import { removeAttachments } from "../core/cleaners/attachmentCleaner";
 import { keepTwoReplies } from "../core/cleaners/replyCleaner";
@@ -59,14 +58,6 @@ async function executeWithNotification(event, worker, errorKey) {
   try {
     const successMessage = await worker();
     platform.notify(successMessage);
-    if (!platform.supportsOnMessageSend()) {
-      try {
-        const composeId = await platform.getComposeId();
-        await confirmEagerly(composeId, storage);
-      } catch (eagerError) {
-        logger.warn("confirmEagerly failed (non-fatal):", eagerError && eagerError.message);
-      }
-    }
   } catch (error) {
     platform.notify(translateError(error, errorKey));
   } finally {
@@ -78,7 +69,7 @@ async function removeImagesCommand(event) {
   await executeWithNotification(
     event,
     async () => {
-      const result = await removeImages(platform);
+      const result = await removeImages(platform, storage);
       if (result.itemsRemoved === 0) {
         return t("commands.notifications.imagesNone");
       }
@@ -98,7 +89,7 @@ async function removeAttachmentsCommand(event) {
   await executeWithNotification(
     event,
     async () => {
-      const result = await removeAttachments(platform);
+      const result = await removeAttachments(platform, storage);
       if (result.itemsRemoved === 0) {
         return t("commands.notifications.attachmentsNone");
       }
@@ -118,7 +109,7 @@ async function keepTwoRepliesCommand(event) {
   await executeWithNotification(
     event,
     async () => {
-      const result = await keepTwoReplies(platform);
+      const result = await keepTwoReplies(platform, storage);
       const found = typeof result.found === "number" ? result.found : 0;
 
       if (found === 0) {
@@ -149,7 +140,7 @@ async function keepSelectionOnlyCommand(event) {
   await executeWithNotification(
     event,
     async () => {
-      const result = await keepSelectionOnly(platform);
+      const result = await keepSelectionOnly(platform, storage);
       const sizeText = result.bytesRemoved > 0 ? formatBytes(result.bytesRemoved) : "";
       return sizeText
         ? t("commands.notifications.keepSelectionDoneWithSize", { size: sizeText })
@@ -169,7 +160,7 @@ async function cleanAllCommand(event) {
   await executeWithNotification(
     event,
     async () => {
-      const out = await cleanAll(platform);
+      const out = await cleanAll(platform, storage);
       const parts = [];
       let totalBytes = 0;
 
@@ -323,19 +314,3 @@ Office.actions.associate("keepTwoRepliesCommand", keepTwoRepliesCommand);
 Office.actions.associate("cleanAllCommand", cleanAllCommand);
 Office.actions.associate("keepSelectionOnlyCommand", keepSelectionOnlyCommand);
 Office.actions.associate("openSettingsCommand", openSettingsCommand);
-
-// Expose the OnMessageSend handler globally so the LaunchEvent declared in
-// manifest.xml can find it. webpack must not tree-shake this assignment.
-const onMessageSendGlobalHandler = (eventArgs) => onMessageSend(eventArgs, platform, storage);
-if (typeof globalThis !== "undefined") {
-  globalThis.onMessageSendGlobalHandler = onMessageSendGlobalHandler;
-}
-
-// Re-export to anchor the symbol against tree-shaking.
-export { onMessageSendGlobalHandler };
-
-// Also bind via Office.actions.associate as a fallback some Outlook clients
-// need for LaunchEvent dispatch.
-if (Office.actions && typeof Office.actions.associate === "function") {
-  Office.actions.associate("onMessageSendGlobalHandler", onMessageSendGlobalHandler);
-}

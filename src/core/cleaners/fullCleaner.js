@@ -10,7 +10,7 @@ import { keepTwoReplies } from "./replyCleaner";
  * is either a CleanupResult or null (if it failed), and errors carries the
  * thrown error keys for router-side notification.
  */
-export async function cleanAll(platform) {
+export async function cleanAll(platform, storage) {
   const out = {
     images: null,
     attachments: null,
@@ -19,19 +19,19 @@ export async function cleanAll(platform) {
   };
 
   try {
-    out.images = await removeImages(platform);
+    out.images = await removeImages(platform, storage);
   } catch (e) {
     out.errors.images = e;
   }
 
   try {
-    out.attachments = await removeAttachments(platform);
+    out.attachments = await removeAttachments(platform, storage);
   } catch (e) {
     out.errors.attachments = e;
   }
 
   try {
-    out.replies = await keepTwoReplies(platform);
+    out.replies = await keepTwoReplies(platform, storage);
   } catch (e) {
     out.errors.replies = e;
   }

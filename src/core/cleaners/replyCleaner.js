@@ -1,4 +1,4 @@
-import { addPendingEvent } from "../savings/pendingSavings";
+import { recordConfirmedSavings } from "../savings/savingsCalculator";
 import { createCleanupEvent } from "../types/CleanupEvent";
 import { createCleanupResult } from "../types/CleanupResult";
 import { ELEMENT_TYPES, CLEANUP_DEFAULTS } from "../../config/constants";
@@ -57,9 +57,10 @@ export function computeKeepTwoRepliesCut(
 
 /**
  * Truncates the draft body to keep only the latest N replies.
- * Returns a CleanupResult and emits a pending event if bytes were removed.
+ * Returns a CleanupResult and records the saving immediately if bytes
+ * were removed.
  */
-export async function keepTwoReplies(platform) {
+export async function keepTwoReplies(platform, storage) {
   const html = await platform.getBodyHtml();
   const { found, cleaned, cutPoint, savedBytes } = computeKeepTwoRepliesCut(html);
 
@@ -76,12 +77,11 @@ export async function keepTwoReplies(platform) {
 
   await platform.setBodyHtml(html.substring(0, cutPoint));
 
-  if (savedBytes > 0) {
+  if (savedBytes > 0 && storage) {
     try {
-      const composeId = await platform.getComposeId();
       const recipients = await platform.getRecipients();
-      addPendingEvent(
-        composeId,
+      recordConfirmedSavings(
+        storage,
         createCleanupEvent({
           elementType: ELEMENT_TYPES.REPLY,
           bytesRemoved: savedBytes,
@@ -90,7 +90,7 @@ export async function keepTwoReplies(platform) {
         })
       );
     } catch (e) {
-      logger.warn("replyCleaner pending event failed (non-fatal):", e && e.message);
+      logger.warn("replyCleaner savings record failed (non-fatal):", e && e.message);
     }
   }
 

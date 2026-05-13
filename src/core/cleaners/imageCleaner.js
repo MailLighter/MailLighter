@@ -1,4 +1,4 @@
-import { addPendingEvent } from "../savings/pendingSavings";
+import { recordConfirmedSavings } from "../savings/savingsCalculator";
 import { createCleanupEvent } from "../types/CleanupEvent";
 import { createCleanupResult } from "../types/CleanupResult";
 import { ELEMENT_TYPES } from "../../config/constants";
@@ -44,9 +44,10 @@ export function stripInlineImages(html) {
 
 /**
  * Remove all inline <img> tags from the current draft body.
- * Adds a pending event; the Settings counter is updated only at send time.
+ * The Settings counter is updated immediately, using the recipient count
+ * captured at click time.
  */
-export async function removeImages(platform) {
+export async function removeImages(platform, storage) {
   const html = await platform.getBodyHtml();
   const { cleaned, bytesRemoved, imagesRemoved } = stripInlineImages(html);
 
@@ -60,12 +61,11 @@ export async function removeImages(platform) {
 
   await platform.setBodyHtml(cleaned);
 
-  if (bytesRemoved > 0) {
+  if (bytesRemoved > 0 && storage) {
     try {
-      const composeId = await platform.getComposeId();
       const recipients = await platform.getRecipients();
-      addPendingEvent(
-        composeId,
+      recordConfirmedSavings(
+        storage,
         createCleanupEvent({
           elementType: ELEMENT_TYPES.IMAGE,
           bytesRemoved,
@@ -74,7 +74,7 @@ export async function removeImages(platform) {
         })
       );
     } catch (e) {
-      logger.warn("imageCleaner pending event failed (non-fatal):", e && e.message);
+      logger.warn("imageCleaner savings record failed (non-fatal):", e && e.message);
     }
   }
 

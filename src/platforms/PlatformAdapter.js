@@ -49,15 +49,9 @@ export class PlatformAdapter {
   /**
    * Identifiant unique de l'email en cours de composition.
    * Stable pendant toute la durée du compose, change à chaque nouveau compose.
-   * Utilisé pour lier les économies "pending" à l'email en cours,
-   * jusqu'à confirmation de l'envoi via sendHandler.
    * @returns {Promise<string>}
    */
   async getComposeId() {
     throw new Error("getComposeId must be implemented");
-  }
-
-  supportsOnMessageSend() {
-    return false;
   }
 }
