@@ -165,21 +165,6 @@
                     </Item>
                   </Items>
                 </Control>
-                <Control xsi:type="Button" id="msgComposeDevViewer">
-                  <Label resid="DevViewer.Label"/>
-                  <Supertip>
-                    <Title resid="DevViewer.Label"/>
-                    <Description resid="DevViewer.Tooltip"/>
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16"/>
-                    <bt:Image size="32" resid="Icon.32x32"/>
-                    <bt:Image size="80" resid="Icon.80x80"/>
-                  </Icon>
-                  <Action xsi:type="ShowTaskpane">
-                    <SourceLocation resid="DevViewer.Url"/>
-                  </Action>
-                </Control>
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -248,10 +233,8 @@
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
-        <bt:Url id="DevViewer.Url" DefaultValue="https://localhost:3000/dev-viewer.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
         <bt:String id="GroupLabel" DefaultValue="Quick Actions">
           <bt:Override Locale="fr-fr" Value="Actions directes"/>
           <bt:Override Locale="es-es" Value="Acciones directas"/>
@@ -314,7 +297,6 @@
           <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
           <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
         </bt:String>
-        <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
       </bt:LongStrings>
     </Resources>
 
@@ -442,21 +424,6 @@
                       </Item>
                     </Items>
                   </Control>
-                  <Control xsi:type="Button" id="msgComposeDevViewer2">
-                    <Label resid="DevViewer.Label"/>
-                    <Supertip>
-                      <Title resid="DevViewer.Label"/>
-                      <Description resid="DevViewer.Tooltip"/>
-                    </Supertip>
-                    <Icon>
-                      <bt:Image size="16" resid="Icon.16x16"/>
-                      <bt:Image size="32" resid="Icon.32x32"/>
-                      <bt:Image size="80" resid="Icon.80x80"/>
-                    </Icon>
-                    <Action xsi:type="ShowTaskpane">
-                      <SourceLocation resid="DevViewer.Url"/>
-                    </Action>
-                  </Control>
                 </Group>
               </OfficeTab>
             </ExtensionPoint>
@@ -527,10 +494,8 @@
           <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
           <bt:Url id="WebViewRuntime.Url" DefaultValue="https://localhost:3000/commands.html"/>
           <bt:Url id="JSRuntime.Url" DefaultValue="https://localhost:3000/commands.js"/>
-          <bt:Url id="DevViewer.Url" DefaultValue="https://localhost:3000/dev-viewer.html"/>
         </bt:Urls>
         <bt:ShortStrings>
-          <bt:String id="DevViewer.Label" DefaultValue="HTML Viewer"/>
           <bt:String id="GroupLabel" DefaultValue="Quick Actions">
             <bt:Override Locale="fr-fr" Value="Actions directes"/>
             <bt:Override Locale="es-es" Value="Acciones directas"/>
@@ -593,7 +558,6 @@
             <bt:Override Locale="fr-fr" Value="Configurer les param&#232;tres MailLighter."/>
             <bt:Override Locale="es-es" Value="Configurar los ajustes de MailLighter."/>
           </bt:String>
-          <bt:String id="DevViewer.Tooltip" DefaultValue="Show the raw HTML of the email body (dev tool)."/>
         </bt:LongStrings>
       </Resources>
     </VersionOverrides>
