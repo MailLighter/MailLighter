@@ -1,25 +1,31 @@
 # Architecture — MailLighter
 
-> Cible : Phase 1a (refactor en couches + cycle send-time du compteur Community).
-> Phase 1b (Enterprise) et Phase 2 (backend) sont décrites dans `REFACTOR_PLAN.md`.
+Add-in Outlook (Office.js) qui propose des actions de nettoyage rapides
+sur l'email en composition et tient un compteur d'économies de
+transmission dans Settings.
 
 ## Vue d'ensemble en couches
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  src/commands/commands.js                                        │
-│    Routeur Office.actions + exposition globale du sendHandler   │
+│    Routeur Office.actions (6 commandes)                          │
 └──────────────┬──────────────────────────────────┬───────────────┘
                │                                  │
                ▼                                  ▼
 ┌──────────────────────────┐        ┌─────────────────────────────┐
 │  src/core/                │        │  src/ui/                    │
-│   - cleaners/*            │        │   - i18n.js                 │
-│   - savings/              │        │   - (settings/, taskpane/   │
-│       savingsCalculator   │        │      gardés à la racine     │
-│       pendingSavings      │        │      pour minimiser le diff)│
-│   - lifecycle/sendHandler │        └─────────────────────────────┘
-│   - types/CleanupEvent    │
+│   - cleaners/             │        │   - i18n.js                 │
+│       imageCleaner        │        │   - (settings/ dialog       │
+│       attachmentCleaner   │        │      à la racine src/)      │
+│       replyCleaner        │        └─────────────────────────────┘
+│       selectionCleaner    │
+│       fullCleaner         │
+│   - savings/              │
+│       savingsCalculator   │
+│   - types/                │
+│       CleanupEvent        │
+│       CleanupResult       │
 │   - replyDetection        │
 │   - htmlSanitizer         │
 │   - ecoMessage            │
@@ -36,25 +42,20 @@
                   ┌─────────────────────────────────────────────┐
                   │  src/config/                                 │
                   │   - constants                                │
-                  │   - featureFlags (vide en 1a, peuplé en 1b) │
                   └─────────────────────────────────────────────┘
 ```
 
-## Règles d'architecture (enforcées par ESLint)
+## Règles d'architecture
 
-1. **`Office.*` ne peut être appelé qu'à l'intérieur de `src/platforms/outlook/`.**
-   Bloqué par `no-restricted-globals` sur `src/core/`, `src/utils/`, `src/config/`.
+Conventions à respecter manuellement (pas d'enforcement ESLint
+automatique) :
 
-2. **Aucun cleaner ne peut importer `savingsCalculator`.**
-   Bloqué par `no-restricted-imports` dans `.eslintrc.json`. Les cleaners n'ont
-   que l'API `addPendingEvent` ; le compteur Settings n'est mis à jour que par
-   `sendHandler` au moment du send effectif.
-
-3. **`core/` ne dépend jamais de `platforms/`.** Les cleaners reçoivent un
-   `PlatformAdapter` en argument, jamais un import direct.
-
-4. **Aucun `getUserIdHash` n'existera jamais dans le `PlatformAdapter`.**
-   Invariant RGPD non négociable. Seul `getTenantIdHash` sera ajouté en 1b.
+1. **`Office.*` ne s'appelle qu'à l'intérieur de `src/platforms/outlook/`.**
+   Les cleaners passent par le `PlatformAdapter` qui leur est injecté.
+2. **`core/` ne dépend jamais de `platforms/`.** Les cleaners reçoivent
+   un `PlatformAdapter` en argument, jamais un import direct.
+3. **Aucun `getUserIdHash`** n'existera dans le `PlatformAdapter`.
+   Invariant RGPD non négociable.
 
 ## Flow d'une commande utilisateur
 
@@ -66,132 +67,71 @@ Office.actions.associate("removeImagesCommand", removeImagesCommand)
               ▼
 commands.js : removeImagesCommand(event)
    → executeWithNotification(event, async () => {
-        result = await removeImages(platform);    ← cleaner
+        result = await removeImages(platform, storage);
         return formatNotification(result);
      })
               │
               ▼
-core/cleaners/imageCleaner.js : removeImages(platform)
+core/cleaners/imageCleaner.js : removeImages(platform, storage)
    1. html = await platform.getBodyHtml()
    2. { cleaned, bytesRemoved, imagesRemoved } = stripInlineImages(html)
    3. await platform.setBodyHtml(cleaned)
-   4. composeId = await platform.getComposeId()
-   5. recipients = await platform.getRecipients()
-   6. addPendingEvent(composeId, createCleanupEvent({...}))
-   7. return CleanupResult
+   4. recipients = await platform.getRecipients()
+   5. recordConfirmedSavings(storage, createCleanupEvent({
+        elementType: "image",
+        bytesRemoved,
+        recipientCount: recipients.length,
+      }))
+      // localStorage.setItem(USER_SAVINGS_TRANSMISSION_IMAGES,
+      //   +bytesRemoved × recipientCount)
+   6. return CleanupResult
               │
               ▼
-        platform.notify("3 images supprimées — 215 KB")
-   ⚠️ La notification mentionne 215 KB, mais le COMPTEUR Settings n'a pas
-      encore bougé. Il ne bougera qu'au send effectif.
+   platform.notify("3 images supprimées — 215 KB")
 ```
 
-## Flow send-time (cœur du refactor 1a)
+L'économie est enregistrée **immédiatement** au moment du cleanup. Le
+`recipientCount` utilisé est celui présent dans le brouillon au moment
+du clic ; ajouter/retirer des destinataires après le cleanup ne modifie
+pas le compteur. Si l'utilisateur ferme la fenêtre sans envoyer, le
+compteur reste tout de même crédité — limitation acceptée.
 
-```
-                 Compose ouvert
-                       │
-                       ▼
-       ┌──────────────────────────────┐
-       │ user clicks "Remove images"  │
-       │ user clicks "Keep replies"   │
-       │ user adds 2 recipients       │
-       └─────────────┬────────────────┘
-                     │
-                     ▼
-              pendingSavings (Map)
-              { composeId →
-                  [imageEvent(1024B, 3), replyEvent(2048B, 3)] }
-              ─────────────────────────────────
-                     │
-                     ▼
-           user clicks "Send"
-                     │
-                     ▼
-       Office.js fires OnMessageSend
-                     │
-                     ▼
-   commands.js : globalThis.onMessageSendGlobalHandler(eventArgs)
-                     │
-                     ▼
-   core/lifecycle/sendHandler : onMessageSend(eventArgs, platform, storage)
-       1. composeId = await platform.getComposeId()
-       2. events = consumePendingEvents(composeId)     ← clears the queue
-       3. recipients = await platform.getRecipients()
-          // user added 2 recipients since cleanup → now 5 (was 3)
-       4. for each event:
-              recordConfirmedSavings(storage, {...event, recipientCount: 5})
-                  ↓
-              localStorage.setItem(USER_SAVINGS_IMAGES,        +1024)
-              localStorage.setItem(USER_SAVINGS_TRANSMISSION,  +1024×5)
-       5. eventArgs.completed({ allowEvent: true })   ← in finally{} :
-                                                       NEVER blocks the send
-                     │
-                     ▼
-           Email is sent
-                     │
-                     ▼
-        Settings reads getSavings(storage)
-        → displays raw + transmission totals
+## Settings — compteur de transmission
+
+`getSavings(storage)` retourne :
+
+```js
+{
+  transmission: {
+    images: <number>,        // bytes × recipients cumulés
+    replies: <number>,
+    attachments: <number>,
+    total: <number>,
+  }
+}
 ```
 
-### Invariants critiques
-
-- **Si l'utilisateur abandonne** (close window without send) : aucun appel à
-  `recordConfirmedSavings` ne se produit. La file `pendingSavings` expire via
-  `purgeStale(24h)`.
-- **Si l'utilisateur ajoute/retire des destinataires entre cleanup et send** :
-  le `recipientCount` est recalculé à 100 % au send. La valeur capturée au
-  cleanup est ignorée.
-- **Si le `sendHandler` échoue** : `eventArgs.completed({ allowEvent: true })`
-  est appelé dans le `finally`, garantissant que l'envoi de l'email ne soit
-  jamais bloqué par MailLighter.
+`selection` est rangé sous `replies` (cohérent avec l'affichage UI
+"Text & replies"). Le dialogue Settings reçoit ces valeurs en URL params
+depuis `commands.js : openSettingsCommand`.
 
 ## Manifest
 
-Le `manifest.xml` enregistre le handler `OnMessageSend` dans le bloc
-`VersionOverridesV1_1` :
+Deux blocs `VersionOverrides` :
 
-```xml
-<ExtensionPoint xsi:type="LaunchEvent">
-  <LaunchEvents>
-    <LaunchEvent Type="OnMessageSend"
-                 FunctionName="onMessageSendGlobalHandler"
-                 SendMode="SoftBlock"/>
-  </LaunchEvents>
-  <SourceLocation resid="Commands.Url"/>
-</ExtensionPoint>
-```
+- **V1_0** : fallback pour clients Mailbox < 1.10. Aucun runtime LaunchEvent.
+- **V1_1** : runtime moderne avec WebViewRuntime, Mailbox ≥ 1.10.
 
-- `MinVersion="1.10"` (requis par `OnMessageSend`).
-- Les clients < 1.10 utilisent le fallback V1.0 sans LaunchEvent → comportement
-  dégradé : aucun comptage. C'est cohérent avec la philosophie "comptage juste
-  ou rien".
-- Aucun `<AppDomain>` ajouté (pas de permissions réseau en 1a).
+Les deux blocs déclarent le même menu (compose + read) avec 6 items :
+Remove images, Keep two replies, Remove attachments, Full cleanup,
+Keep selection, Settings. Toute modification de libellé du ruban doit
+être appliquée dans les deux blocs.
 
-## Compose ID
+Aucun `<AppDomain>` réseau ajouté — pas de communication externe.
 
-`platform.getComposeId()` génère un UUID stable pendant toute la durée d'une
-fenêtre de composition. L'implémentation Outlook persiste l'UUID via
-`Office.context.mailbox.item.sessionData` (clé `ml.composeId`). Si `sessionData`
-n'est pas disponible (clients legacy), un fallback in-memory est utilisé. Cet
-edge case est acceptable en 1a (multi-compose simultané sans sessionData
-pourrait collisionner — non bloquant pour le MVP).
+## Plateformes futures (Gmail)
 
-## Préparation Phase 1b et au-delà
-
-Tout est en place pour que la Phase 1b se contente d'**ajouter** des modules
-et **un seul appel** dans `sendHandler.js` :
-
-- `src/integrations/license/licenseManager.js` (stub)
-- `src/integrations/telemetry/eventCollector.js` etc.
-- `getTenantIdHash()` ajouté à `PlatformAdapter` et `OutlookAdapter`
-- Dans `sendHandler.onMessageSend`, **après** `recordConfirmedSavings`,
-  ajouter `if (FEATURE_FLAGS.ENTERPRISE_MODE) await collectEvent(updated)`
-
-Aucune réécriture de cleaner ni de routeur ne sera nécessaire en 1b.
-
-Pour Gmail (Phase ultérieure) : créer `src/platforms/gmail/gmailAdapter.js` qui
-implémente la même interface `PlatformAdapter`. Note : Gmail tourne dans un
-runtime différent (Apps Script ou Gmail Add-on) — il s'agira probablement d'un
-**bundle distinct** partageant uniquement les fichiers `core/` purs.
+Pour ajouter Gmail : créer `src/platforms/gmail/gmailAdapter.js` qui
+implémente l'interface `PlatformAdapter`. Gmail tourne dans un runtime
+différent (Apps Script ou Gmail Add-on) ; il s'agira probablement d'un
+bundle distinct partageant uniquement les fichiers `core/` purs.
